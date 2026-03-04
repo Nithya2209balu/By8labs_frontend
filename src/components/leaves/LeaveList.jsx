@@ -1,33 +1,23 @@
 import React, { useState } from 'react';
 import {
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Chip,
-    IconButton,
-    Tooltip,
-    Typography,
-    Box,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
-    Button,
-    TextField,
-    MenuItem
+    Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Chip, IconButton, Tooltip, Typography, Box, Dialog, DialogTitle,
+    DialogContent, DialogContentText, DialogActions, Button, TextField,
+    MenuItem, TablePagination, InputAdornment, FormControl, InputLabel, Select, Grid
 } from '@mui/material';
-import { Edit, Delete, Visibility } from '@mui/icons-material';
+import { Edit, Delete, Visibility, Search } from '@mui/icons-material';
 
 const LeaveList = ({ leaves, onEdit, onDelete, onRefresh, isHR = false, onReview = null }) => {
     const [deleteDialog, setDeleteDialog] = useState({ open: false, leave: null });
     const [reviewDialog, setReviewDialog] = useState({ open: false, leave: null });
     const [reviewData, setReviewData] = useState({ status: 'Approved', reviewComments: '' });
     const [detailDialog, setDetailDialog] = useState({ open: false, leave: null });
+
+    // Search, filter, pagination
+    const [searchTerm, setSearchTerm] = useState('');
+    const [leaveTypeFilter, setLeaveTypeFilter] = useState('All');
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -82,6 +72,40 @@ const LeaveList = ({ leaves, onEdit, onDelete, onRefresh, isHR = false, onReview
 
     return (
         <>
+            {/* Search & Filter Controls */}
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth size="small"
+                        placeholder={isHR ? 'Search by employee name or subject...' : 'Search by subject...'}
+                        value={searchTerm}
+                        onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
+                        InputProps={{
+                            startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment>
+                        }}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth size="small">
+                        <InputLabel>Leave Type</InputLabel>
+                        <Select
+                            value={leaveTypeFilter}
+                            label="Leave Type"
+                            onChange={(e) => { setLeaveTypeFilter(e.target.value); setPage(0); }}
+                        >
+                            <MenuItem value="All">All Types</MenuItem>
+                            <MenuItem value="Casual Leave">Casual Leave</MenuItem>
+                            <MenuItem value="Sick Leave">Sick Leave</MenuItem>
+                            <MenuItem value="Earned Leave">Earned Leave</MenuItem>
+                            <MenuItem value="Emergency Leave">Emergency Leave</MenuItem>
+                            <MenuItem value="Maternity Leave">Maternity Leave</MenuItem>
+                            <MenuItem value="Paternity Leave">Paternity Leave</MenuItem>
+                            <MenuItem value="Unpaid Leave">Unpaid Leave</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+            </Grid>
+
             <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
@@ -98,16 +122,24 @@ const LeaveList = ({ leaves, onEdit, onDelete, onRefresh, isHR = false, onReview
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {leaves.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={isHR ? 9 : 8} align="center">
-                                    <Typography color="textSecondary">
-                                        No leave requests found
-                                    </Typography>
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            leaves.map((leave) => (
+                        {(() => {
+                            const filtered = leaves.filter(leave => {
+                                const empName = `${leave.employeeId?.firstName || ''} ${leave.employeeId?.lastName || ''}`.toLowerCase();
+                                const searchMatch = !searchTerm ||
+                                    (leave.subject || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    empName.includes(searchTerm.toLowerCase());
+                                const typeMatch = leaveTypeFilter === 'All' || leave.leaveType === leaveTypeFilter;
+                                return searchMatch && typeMatch;
+                            });
+                            const paginated = filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+                            if (filtered.length === 0) return (
+                                <TableRow>
+                                    <TableCell colSpan={isHR ? 9 : 8} align="center">
+                                        <Typography color="textSecondary">No leave requests found</Typography>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                            return paginated.map((leave) => (
                                 <TableRow key={leave._id}>
                                     {isHR && (
                                         <TableCell>
@@ -124,64 +156,59 @@ const LeaveList = ({ leaves, onEdit, onDelete, onRefresh, isHR = false, onReview
                                     <TableCell>{formatDate(leave.endDate)}</TableCell>
                                     <TableCell>{leave.numberOfDays}</TableCell>
                                     <TableCell>
-                                        <Chip
-                                            label={leave.status}
-                                            color={getStatusColor(leave.status)}
-                                            size="small"
-                                        />
+                                        <Chip label={leave.status} color={getStatusColor(leave.status)} size="small" />
                                     </TableCell>
                                     <TableCell>{formatDate(leave.appliedDate)}</TableCell>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', gap: 1 }}>
                                             <Tooltip title="View Details">
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => handleViewDetails(leave)}
-                                                >
+                                                <IconButton size="small" onClick={() => handleViewDetails(leave)}>
                                                     <Visibility fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
-
                                             {!isHR && leave.status === 'Pending' && (
                                                 <>
                                                     <Tooltip title="Edit">
-                                                        <IconButton
-                                                            size="small"
-                                                            color="primary"
-                                                            onClick={() => onEdit(leave)}
-                                                        >
+                                                        <IconButton size="small" color="primary" onClick={() => onEdit(leave)}>
                                                             <Edit fontSize="small" />
                                                         </IconButton>
                                                     </Tooltip>
                                                     <Tooltip title="Delete">
-                                                        <IconButton
-                                                            size="small"
-                                                            color="error"
-                                                            onClick={() => handleDeleteClick(leave)}
-                                                        >
+                                                        <IconButton size="small" color="error" onClick={() => handleDeleteClick(leave)}>
                                                             <Delete fontSize="small" />
                                                         </IconButton>
                                                     </Tooltip>
                                                 </>
                                             )}
-
                                             {isHR && leave.status === 'Pending' && (
-                                                <Button
-                                                    size="small"
-                                                    variant="contained"
-                                                    onClick={() => handleReviewClick(leave)}
-                                                >
+                                                <Button size="small" variant="contained" onClick={() => handleReviewClick(leave)}>
                                                     Review
                                                 </Button>
                                             )}
                                         </Box>
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
+                            ));
+                        })()}
                     </TableBody>
                 </Table>
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[10, 25, 50]}
+                component="div"
+                count={leaves.filter(leave => {
+                    const empName = `${leave.employeeId?.firstName || ''} ${leave.employeeId?.lastName || ''}`.toLowerCase();
+                    const searchMatch = !searchTerm ||
+                        (leave.subject || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        empName.includes(searchTerm.toLowerCase());
+                    const typeMatch = leaveTypeFilter === 'All' || leave.leaveType === leaveTypeFilter;
+                    return searchMatch && typeMatch;
+                }).length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={(e, newPage) => setPage(newPage)}
+                onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+            />
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, leave: null })}>

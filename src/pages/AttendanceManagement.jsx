@@ -1,35 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { CheckCircle, Cancel, AccessTime, Edit, Search } from '@mui/icons-material';
 import {
-    Box,
-    Paper,
-    Typography,
-    Button,
-    Card,
-    CardContent,
-    Grid,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Alert,
-    Chip,
-    CircularProgress,
-    TextField,
-    MenuItem,
-    Tabs,
-    Tab,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    FormControl,
-    InputLabel,
-    Select,
-    IconButton
+    Box, Paper, Typography, Button, Card, CardContent, Grid,
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Alert, Chip, CircularProgress, TextField, MenuItem, Tabs, Tab,
+    Dialog, DialogTitle, DialogContent, DialogActions, FormControl,
+    InputLabel, Select, IconButton, TablePagination, InputAdornment
 } from '@mui/material';
-import { CheckCircle, Cancel, AccessTime, Edit } from '@mui/icons-material';
 import { attendanceAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import EmployeeAttendanceList from '../components/attendance/EmployeeAttendanceList';
@@ -55,12 +32,26 @@ const AttendanceManagement = () => {
         employeeId: ''
     });
 
-    // Edit dialog state for HR
-    const [editDialog, setEditDialog] = useState({
-        open: false,
-        record: null
-    });
+    const [editDialog, setEditDialog] = useState({ open: false, record: null });
     const [editStatus, setEditStatus] = useState('');
+
+    // Permission dialog state
+    const [permissionDialog, setPermissionDialog] = useState(false);
+    const [permissionFrom, setPermissionFrom] = useState('');
+    const [permissionTo, setPermissionTo] = useState('');
+    const [permissionError, setPermissionError] = useState('');
+
+    // Employee table state
+    const [empSearch, setEmpSearch] = useState('');
+    const [empStatusFilter, setEmpStatusFilter] = useState('All');
+    const [empPage, setEmpPage] = useState(0);
+    const [empRowsPerPage, setEmpRowsPerPage] = useState(10);
+
+    // HR table state
+    const [hrSearch, setHrSearch] = useState('');
+    const [hrStatusFilter, setHrStatusFilter] = useState('All');
+    const [hrPage, setHrPage] = useState(0);
+    const [hrRowsPerPage, setHrRowsPerPage] = useState(10);
 
     useEffect(() => {
         loadData();
@@ -123,10 +114,17 @@ const AttendanceManagement = () => {
         setStats({ present, absent, total: data.length });
     };
 
-    const markAttendance = async (status) => {
+    const markAttendance = async (status, extraData = {}) => {
+        if (todayAttendance) {
+            setMessage({
+                type: 'warning',
+                text: `Attendance already marked as "${todayAttendance.status}" today. You can only mark attendance once per day.`
+            });
+            return;
+        }
         try {
             setMessage({ type: '', text: '' });
-            const response = await attendanceAPI.markAttendance({ status });
+            const response = await attendanceAPI.markAttendance({ status, ...extraData });
             setTodayAttendance(response.data);
             setMessage({
                 type: 'success',
@@ -139,6 +137,33 @@ const AttendanceManagement = () => {
                 text: error.response?.data?.message || 'Failed to mark attendance'
             });
         }
+    };
+
+    const handlePermissionClick = () => {
+        if (todayAttendance) {
+            setMessage({
+                type: 'warning',
+                text: `Attendance already marked as "${todayAttendance.status}" today. You can only mark attendance once per day.`
+            });
+            return;
+        }
+        setPermissionFrom('');
+        setPermissionTo('');
+        setPermissionError('');
+        setPermissionDialog(true);
+    };
+
+    const handlePermissionSubmit = async () => {
+        if (!permissionFrom || !permissionTo) {
+            setPermissionError('Please select both From Time and To Time.');
+            return;
+        }
+        if (permissionFrom >= permissionTo) {
+            setPermissionError('"To Time" must be after "From Time".');
+            return;
+        }
+        setPermissionDialog(false);
+        await markAttendance('Permission', { permissionFrom, permissionTo });
     };
 
     const handleEditAttendance = (record) => {
@@ -308,7 +333,7 @@ const AttendanceManagement = () => {
                             '&:hover': { backgroundColor: todayAttendance?.status === 'Permission' ? 'rgba(33, 150, 243, 0.1)' : '#1976d2' }
                         }}
                         startIcon={<AccessTime />}
-                        onClick={() => markAttendance('Permission')}
+                        onClick={handlePermissionClick}
                     >
                         Mark Permission
                     </Button>
@@ -379,6 +404,39 @@ const AttendanceManagement = () => {
                         <Typography variant="h6" gutterBottom>
                             Attendance History (Current Month)
                         </Typography>
+
+                        {/* Search & Filter */}
+                        <Grid container spacing={2} sx={{ mb: 2 }}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth size="small"
+                                    placeholder="Search by date..."
+                                    value={empSearch}
+                                    onChange={(e) => { setEmpSearch(e.target.value); setEmpPage(0); }}
+                                    InputProps={{
+                                        startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment>
+                                    }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <FormControl fullWidth size="small">
+                                    <InputLabel>Status</InputLabel>
+                                    <Select
+                                        value={empStatusFilter}
+                                        label="Status"
+                                        onChange={(e) => { setEmpStatusFilter(e.target.value); setEmpPage(0); }}
+                                    >
+                                        <MenuItem value="All">All Status</MenuItem>
+                                        <MenuItem value="Present">Present</MenuItem>
+                                        <MenuItem value="Absent">Absent</MenuItem>
+                                        <MenuItem value="Permission">Permission</MenuItem>
+                                        <MenuItem value="Half Day">Half Day</MenuItem>
+                                        <MenuItem value="Work From Home">Work From Home</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                        </Grid>
+
                         <TableContainer>
                             <Table>
                                 <TableHead>
@@ -390,33 +448,43 @@ const AttendanceManagement = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {attendanceHistory.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={4} align="center">
-                                                No attendance records found
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        attendanceHistory.map((record) => (
+                                    {(() => {
+                                        const filtered = attendanceHistory.filter(r => {
+                                            const dateMatch = !empSearch || formatDate(r.date).toLowerCase().includes(empSearch.toLowerCase());
+                                            const statusMatch = empStatusFilter === 'All' || r.status === empStatusFilter;
+                                            return dateMatch && statusMatch;
+                                        });
+                                        const paginated = filtered.slice(empPage * empRowsPerPage, empPage * empRowsPerPage + empRowsPerPage);
+                                        if (filtered.length === 0) return (
+                                            <TableRow><TableCell colSpan={4} align="center">No records found</TableCell></TableRow>
+                                        );
+                                        return paginated.map((record) => (
                                             <TableRow key={record._id}>
                                                 <TableCell>{formatDate(record.date)}</TableCell>
                                                 <TableCell>
-                                                    <Chip
-                                                        label={record.status}
-                                                        color={getStatusColor(record.status)}
-                                                        size="small"
-                                                    />
+                                                    <Chip label={record.status} color={getStatusColor(record.status)} size="small" />
                                                 </TableCell>
-                                                <TableCell>
-                                                    {record.checkIn ? formatTime(record.checkIn) : '-'}
-                                                </TableCell>
+                                                <TableCell>{record.checkIn ? formatTime(record.checkIn) : '-'}</TableCell>
                                                 <TableCell>{record.totalHours || 0} hrs</TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
+                                        ));
+                                    })()}
                                 </TableBody>
                             </Table>
                         </TableContainer>
+                        <TablePagination
+                            rowsPerPageOptions={[10, 25, 50]}
+                            component="div"
+                            count={attendanceHistory.filter(r => {
+                                const dateMatch = !empSearch || formatDate(r.date).toLowerCase().includes(empSearch.toLowerCase());
+                                const statusMatch = empStatusFilter === 'All' || r.status === empStatusFilter;
+                                return dateMatch && statusMatch;
+                            }).length}
+                            rowsPerPage={empRowsPerPage}
+                            page={empPage}
+                            onPageChange={(e, newPage) => setEmpPage(newPage)}
+                            onRowsPerPageChange={(e) => { setEmpRowsPerPage(parseInt(e.target.value, 10)); setEmpPage(0); }}
+                        />
                     </Paper>
                 </>
             )}
@@ -449,34 +517,56 @@ const AttendanceManagement = () => {
                             </Typography>
 
                             {/* Filters */}
-                            <Grid container spacing={2} sx={{ mb: 3 }}>
-                                <Grid item xs={12} md={4}>
+                            <Grid container spacing={2} sx={{ mb: 2 }}>
+                                <Grid item xs={12} md={3}>
                                     <TextField
-                                        fullWidth
-                                        label="Start Date"
-                                        type="date"
+                                        fullWidth size="small"
+                                        placeholder="Search employee name / ID..."
+                                        value={hrSearch}
+                                        onChange={(e) => { setHrSearch(e.target.value); setHrPage(0); }}
+                                        InputProps={{
+                                            startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment>
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={2}>
+                                    <FormControl fullWidth size="small">
+                                        <InputLabel>Status</InputLabel>
+                                        <Select
+                                            value={hrStatusFilter}
+                                            label="Status"
+                                            onChange={(e) => { setHrStatusFilter(e.target.value); setHrPage(0); }}
+                                        >
+                                            <MenuItem value="All">All Status</MenuItem>
+                                            <MenuItem value="Present">Present</MenuItem>
+                                            <MenuItem value="Absent">Absent</MenuItem>
+                                            <MenuItem value="Permission">Permission</MenuItem>
+                                            <MenuItem value="Half Day">Half Day</MenuItem>
+                                            <MenuItem value="Work From Home">WFH</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                                <Grid item xs={12} md={3}>
+                                    <TextField
+                                        fullWidth size="small"
+                                        label="Start Date" type="date"
                                         value={filters.startDate}
                                         onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
                                         InputLabelProps={{ shrink: true }}
                                     />
                                 </Grid>
-                                <Grid item xs={12} md={4}>
+                                <Grid item xs={12} md={3}>
                                     <TextField
-                                        fullWidth
-                                        label="End Date"
-                                        type="date"
+                                        fullWidth size="small"
+                                        label="End Date" type="date"
                                         value={filters.endDate}
                                         onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
                                         InputLabelProps={{ shrink: true }}
                                     />
                                 </Grid>
-                                <Grid item xs={12} md={4}>
-                                    <Button
-                                        variant="contained"
-                                        onClick={loadData}
-                                        sx={{ height: '56px' }}
-                                    >
-                                        Apply Filters
+                                <Grid item xs={12} md={1}>
+                                    <Button variant="contained" onClick={loadData} fullWidth sx={{ height: '40px' }}>
+                                        Apply
                                     </Button>
                                 </Grid>
                             </Grid>
@@ -495,49 +585,57 @@ const AttendanceManagement = () => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {allAttendance.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={7} align="center">
-                                                    No attendance records found
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            allAttendance.map((record) => (
+                                        {(() => {
+                                            const filtered = allAttendance.filter(r => {
+                                                const name = `${r.employeeId?.firstName || ''} ${r.employeeId?.lastName || ''}`.toLowerCase();
+                                                const id = r.employeeId?.employeeId?.toLowerCase() || '';
+                                                const searchMatch = !hrSearch || name.includes(hrSearch.toLowerCase()) || id.includes(hrSearch.toLowerCase());
+                                                const statusMatch = hrStatusFilter === 'All' || r.status === hrStatusFilter;
+                                                return searchMatch && statusMatch;
+                                            });
+                                            const paginated = filtered.slice(hrPage * hrRowsPerPage, hrPage * hrRowsPerPage + hrRowsPerPage);
+                                            if (filtered.length === 0) return (
+                                                <TableRow><TableCell colSpan={7} align="center">No attendance records found</TableCell></TableRow>
+                                            );
+                                            return paginated.map((record) => (
                                                 <TableRow key={record._id}>
                                                     <TableCell>{record.employeeId?.employeeId || '-'}</TableCell>
-                                                    <TableCell>
-                                                        {record.employeeId?.firstName} {record.employeeId?.lastName}
-                                                    </TableCell>
+                                                    <TableCell>{record.employeeId?.firstName} {record.employeeId?.lastName}</TableCell>
                                                     <TableCell>{formatDate(record.date)}</TableCell>
                                                     <TableCell>
-                                                        <Chip
-                                                            label={record.status}
-                                                            color={getStatusColor(record.status)}
-                                                            size="small"
-                                                        />
+                                                        <Chip label={record.status} color={getStatusColor(record.status)} size="small" />
                                                     </TableCell>
-                                                    <TableCell>
-                                                        {record.checkIn ? formatTime(record.checkIn) : '-'}
-                                                    </TableCell>
+                                                    <TableCell>{record.checkIn ? formatTime(record.checkIn) : '-'}</TableCell>
                                                     <TableCell>{record.totalHours || 0} hrs</TableCell>
                                                     <TableCell align="center">
-                                                        <IconButton
-                                                            size="small"
-                                                            color="primary"
-                                                            onClick={() => handleEditAttendance(record)}
-                                                            title="Edit Attendance"
-                                                        >
+                                                        <IconButton size="small" color="primary" onClick={() => handleEditAttendance(record)} title="Edit Attendance">
                                                             <Edit fontSize="small" />
                                                         </IconButton>
                                                     </TableCell>
                                                 </TableRow>
-                                            ))
-                                        )}
+                                            ));
+                                        })()}
                                     </TableBody>
                                 </Table>
                             </TableContainer>
+                            <TablePagination
+                                rowsPerPageOptions={[10, 25, 50]}
+                                component="div"
+                                count={allAttendance.filter(r => {
+                                    const name = `${r.employeeId?.firstName || ''} ${r.employeeId?.lastName || ''}`.toLowerCase();
+                                    const id = r.employeeId?.employeeId?.toLowerCase() || '';
+                                    const searchMatch = !hrSearch || name.includes(hrSearch.toLowerCase()) || id.includes(hrSearch.toLowerCase());
+                                    const statusMatch = hrStatusFilter === 'All' || r.status === hrStatusFilter;
+                                    return searchMatch && statusMatch;
+                                }).length}
+                                rowsPerPage={hrRowsPerPage}
+                                page={hrPage}
+                                onPageChange={(e, newPage) => setHrPage(newPage)}
+                                onRowsPerPageChange={(e) => { setHrRowsPerPage(parseInt(e.target.value, 10)); setHrPage(0); }}
+                            />
                         </Paper>
                     )}
+
 
                     {/* Tab 2: Month View */}
                     {tabValue === 2 && (
@@ -550,6 +648,63 @@ const AttendanceManagement = () => {
                     )}
                 </Box>
             )}
+
+            {/* Permission Time Dialog */}
+            <Dialog
+                open={permissionDialog}
+                onClose={() => setPermissionDialog(false)}
+                maxWidth="xs"
+                fullWidth
+            >
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AccessTime color="info" />
+                    Permission Time
+                </DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Please specify the time range for your permission leave today.
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <TextField
+                            label="From Time"
+                            type="time"
+                            value={permissionFrom}
+                            onChange={(e) => { setPermissionFrom(e.target.value); setPermissionError(''); }}
+                            InputLabelProps={{ shrink: true }}
+                            inputProps={{ step: 300 }}
+                            fullWidth
+                            required
+                        />
+                        <TextField
+                            label="To Time"
+                            type="time"
+                            value={permissionTo}
+                            onChange={(e) => { setPermissionTo(e.target.value); setPermissionError(''); }}
+                            InputLabelProps={{ shrink: true }}
+                            inputProps={{ step: 300 }}
+                            fullWidth
+                            required
+                        />
+                        {permissionError && (
+                            <Alert severity="error" sx={{ py: 0.5 }}>{permissionError}</Alert>
+                        )}
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => setPermissionDialog(false)}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="info"
+                        onClick={handlePermissionSubmit}
+                        disabled={!permissionFrom || !permissionTo}
+                        startIcon={<AccessTime />}
+                    >
+                        Submit Permission
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Edit Attendance Dialog (HR Only) */}
             {isHR && (

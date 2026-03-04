@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '@mui/material/styles';
 import logoImg from '../../assets/logo.png';
+import NotificationBell from './NotificationBell';
 import {
     AppBar,
     Toolbar,
@@ -48,7 +49,7 @@ const Header = ({ onMenuToggle }) => {
                 boxShadow: `0 4px 12px ${theme.palette.primary.main}40`,
             }}
         >
-            <Toolbar sx={{ gap: 1, minHeight: 80 }}>
+            <Toolbar sx={{ gap: 1, minHeight: 100 }}>
 
                 {/* Hamburger - mobile only */}
                 <IconButton
@@ -75,7 +76,7 @@ const Header = ({ onMenuToggle }) => {
                         src={logoImg}
                         alt="BY8labs Logo"
     sx={{
-        height: { xs: 55, sm: 60, md: 64 },
+        height: { xs: 55, sm: 60, md: 64  },
         width: 'auto',
         mr: 2,
         objectFit: 'contain'
@@ -104,6 +105,9 @@ const Header = ({ onMenuToggle }) => {
 
                 {/* User Section */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+
+                    {/* Notification Bell */}
+                    <NotificationBell />
 
                     {/* Email - hide on small screens */}
                     <Typography

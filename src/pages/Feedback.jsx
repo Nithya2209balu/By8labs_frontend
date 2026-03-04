@@ -4,6 +4,7 @@ import {
     Box,
     Typography,
     Button,
+    IconButton,
     Tabs,
     Tab,
     Select,
@@ -13,9 +14,10 @@ import {
     TextField,
     Stack,
     CircularProgress,
-    Alert
+    Alert,
+    Tooltip
 } from '@mui/material';
-import { Add, FilterList } from '@mui/icons-material';
+import { Add, FilterList, Refresh } from '@mui/icons-material';
 import { feedbackAPI } from '../services/api';
 import FeedbackCard from '../components/feedback/FeedbackCard';
 import FeedbackForm from '../components/feedback/FeedbackForm';
@@ -130,14 +132,21 @@ const Feedback = () => {
                 <Typography variant="h4" fontWeight="bold">
                     Company Feedback
                 </Typography>
-                <Button
-                    variant="contained"
-                    startIcon={<Add />}
-                    onClick={() => setOpenForm(true)}
-                    size="large"
-                >
-                    Share Feedback
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Tooltip title="Refresh feedback">
+                        <IconButton onClick={loadFeedback} color="default" size="large">
+                            <Refresh />
+                        </IconButton>
+                    </Tooltip>
+                    <Button
+                        variant="contained"
+                        startIcon={<Add />}
+                        onClick={() => setOpenForm(true)}
+                        size="large"
+                    >
+                        Share Feedback
+                    </Button>
+                </Box>
             </Box>
 
             {message.text && (

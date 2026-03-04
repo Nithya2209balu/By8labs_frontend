@@ -229,25 +229,25 @@ const greenTheme = createTheme({
     ...sharedComponents,
 });
 
-// Light Blue theme for Employee role
-const blueTheme = createTheme({
+// Wethers Field 415E theme for Employee role (muted sage green)
+const employeeTheme = createTheme({
     palette: {
         primary: {
-            main: '#3b82f6',
-            light: '#60a5fa',
-            dark: '#2563eb',
+            main: '#0f172a ',        // Wethers Field 415E
+            light: '#0f172a ',
+            dark: '#0f172a ',
             contrastText: '#ffffff',
         },
         secondary: {
-            main: '#6366f1',
-            light: '#818cf8',
-            dark: '#4f46e5',
+            main: '#0f172a ',
+            light: '#0f172a ',
+            dark: '#0f172a ',
             contrastText: '#ffffff',
         },
         success: {
-            main: '#10b981',
-            light: '#6ee7b7',
-            dark: '#047857',
+            main: '#4caf50',
+            light: '#80e27e',
+            dark: '#087f23',
         },
         error: {
             main: '#ef4444',
@@ -260,7 +260,7 @@ const blueTheme = createTheme({
             dark: '#d97706',
         },
         background: {
-            default: '#f0f9ff',
+            default: '#f5f6f5',
             paper: '#ffffff',
         },
     },
@@ -275,15 +275,15 @@ const blueTheme = createTheme({
                     borderRadius: 8,
                 },
                 contained: {
-                    boxShadow: '0 2px 8px rgba(59, 130, 246, 0.25)',
+                    boxShadow: '0 2px 8px rgba(107, 124, 110, 0.25)',
                     '&:hover': {
-                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.35)',
+                        boxShadow: '0 4px 12px rgba(107, 124, 110, 0.35)',
                     },
                 },
                 containedPrimary: {
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                    background: 'linear-gradient(135deg, #6B7C6E 0%, #4A5A4C 100%)',
                     '&:hover': {
-                        background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                        background: 'linear-gradient(135deg, #4A5A4C 0%, #3A4A3C 100%)',
                     },
                 },
             },
@@ -293,8 +293,8 @@ const blueTheme = createTheme({
                 root: {
                     '& .MuiTableCell-head': {
                         fontWeight: 700,
-                        backgroundColor: '#eff6ff',
-                        color: '#1e3a8a',
+                        backgroundColor: '#eef0ee',
+                        color: '#3A4A3C',
                     },
                 },
             },
@@ -304,7 +304,7 @@ const blueTheme = createTheme({
                 root: {
                     borderRadius: 12,
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                    '&:hover': { boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12)' },
+                    '&:hover': { boxShadow: '0 4px 16px rgba(107, 124, 110, 0.2)' },
                 },
             },
         },
@@ -313,7 +313,7 @@ const blueTheme = createTheme({
                 root: { borderRadius: 8 },
                 elevation1: { boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' },
                 elevation2: { boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' },
-                elevation3: { boxShadow: '0 6px 16px rgba(0, 0, 0, 0.12)' },
+                elevation3: { boxShadow: '0 6px 16px rgba(107, 124, 110, 0.12)' },
             },
         },
         MuiChip: { styleOverrides: { root: { fontWeight: 600 } } },
@@ -329,11 +329,110 @@ const blueTheme = createTheme({
     },
 });
 
+
+// Dark navy theme for Student role (#0f172a)
+const studentTheme = createTheme({
+    palette: {
+        mode: 'dark',
+        primary: {
+            main: '#6366f1',        // Indigo accent – visible on dark bg
+            light: '#818cf8',
+            dark: '#4f46e5',
+            contrastText: '#ffffff',
+        },
+        secondary: {
+            main: '#38bdf8',        // Sky blue accent
+            light: '#7dd3fc',
+            dark: '#0284c7',
+            contrastText: '#ffffff',
+        },
+        success: { main: '#22c55e', light: '#86efac', dark: '#15803d' },
+        error:   { main: '#ef4444', light: '#f87171', dark: '#dc2626' },
+        warning: { main: '#f59e0b', light: '#fbbf24', dark: '#d97706' },
+        background: {
+            default: '#0f172a',     // Slate-950 – main background
+            paper:   '#1e293b',     // Slate-800 – cards / dialogs
+        },
+        text: {
+            primary:   '#f1f5f9',
+            secondary: '#94a3b8',
+            disabled:  '#475569',
+        },
+        divider: 'rgba(255,255,255,0.08)',
+    },
+    typography: sharedTypography,
+    shape: { borderRadius: 8 },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                root: { textTransform: 'none', fontWeight: 600, borderRadius: 8 },
+                contained: {
+                    boxShadow: '0 2px 8px rgba(99,102,241,0.3)',
+                    '&:hover': { boxShadow: '0 4px 14px rgba(99,102,241,0.45)' },
+                },
+                containedPrimary: {
+                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                    '&:hover': { background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)' },
+                },
+            },
+        },
+        MuiCard: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: '#1e293b',
+                    borderRadius: 12,
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    '&:hover': { boxShadow: '0 4px 20px rgba(99,102,241,0.2)' },
+                },
+            },
+        },
+        MuiPaper: {
+            styleOverrides: {
+                root: { backgroundColor: '#1e293b', borderRadius: 8 },
+                elevation1: { boxShadow: '0 2px 10px rgba(0,0,0,0.35)' },
+                elevation2: { boxShadow: '0 4px 14px rgba(0,0,0,0.4)' },
+            },
+        },
+        MuiTableHead: {
+            styleOverrides: {
+                root: {
+                    '& .MuiTableCell-head': {
+                        fontWeight: 700,
+                        backgroundColor: '#0f172a',
+                        color: '#6366f1',
+                    },
+                },
+            },
+        },
+        MuiAppBar: {
+            styleOverrides: {
+                root: { backgroundColor: '#1e293b', boxShadow: '0 1px 0 rgba(255,255,255,0.06)' },
+            },
+        },
+        MuiDrawer: {
+            styleOverrides: {
+                paper: { backgroundColor: '#1e293b', borderRight: '1px solid rgba(255,255,255,0.06)' },
+            },
+        },
+        MuiChip: { styleOverrides: { root: { fontWeight: 600 } } },
+        MuiTab: {
+            styleOverrides: {
+                root: { textTransform: 'none', fontWeight: 600, fontSize: '0.95rem' },
+            },
+        },
+    },
+});
+
 // Picks the right theme based on role
 function ThemedApp({ children }) {
     const { user } = useAuth();
     const theme = useMemo(
-        () => user?.role === 'Employee' ? blueTheme : greenTheme,
+        () => {
+            if (user?.role === 'Employee') return employeeTheme;
+            if (user?.role === 'Student')  return studentTheme;
+            return greenTheme; // HR / Manager / default
+        },
         [user?.role]
     );
     return (

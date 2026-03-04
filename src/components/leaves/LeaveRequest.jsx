@@ -8,15 +8,27 @@ import {
     TextField,
     MenuItem,
     Grid,
-    Alert
+    Alert,
+    Typography
 } from '@mui/material';
 import { leaveAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+
+// Types that can be applied on the current (same) date
+const SAME_DAY_ALLOWED = ['Sick Leave', 'Emergency Leave'];
 
 const LeaveRequest = ({ open, onClose, onSuccess, editLeave = null }) => {
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    // Today's date as YYYY-MM-DD
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Tomorrow's date as YYYY-MM-DD
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
     // Extract employeeId as string
     const getEmployeeId = () => {
@@ -72,7 +84,12 @@ const LeaveRequest = ({ open, onClose, onSuccess, editLeave = null }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        // If leave type changes, clear startDate/endDate to force re-selection with correct min
+        if (name === 'leaveType') {
+            setFormData(prev => ({ ...prev, [name]: value, startDate: '', endDate: '', numberOfDays: 0 }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -81,14 +98,12 @@ const LeaveRequest = ({ open, onClose, onSuccess, editLeave = null }) => {
         setLoading(true);
 
         try {
-            // Validate that user has an employeeId
             if (!user?.employeeId) {
                 setError('Your account is not linked to an employee record. Please contact HR to link your account.');
                 setLoading(false);
                 return;
             }
 
-            // Prepare data with proper employeeId
             const submitData = {
                 ...formData,
                 employeeId: typeof user.employeeId === 'object' ? user.employeeId._id : user.employeeId
@@ -107,6 +122,10 @@ const LeaveRequest = ({ open, onClose, onSuccess, editLeave = null }) => {
             setLoading(false);
         }
     };
+
+    // Compute minimum date based on leave type
+    const isSameDayAllowed = SAME_DAY_ALLOWED.includes(formData.leaveType);
+    const minStartDate = isSameDayAllowed ? todayStr : tomorrowStr;
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -147,6 +166,7 @@ const LeaveRequest = ({ open, onClose, onSuccess, editLeave = null }) => {
                                 <MenuItem value="Casual Leave">Casual Leave</MenuItem>
                                 <MenuItem value="Sick Leave">Sick Leave</MenuItem>
                                 <MenuItem value="Earned Leave">Earned Leave</MenuItem>
+                                <MenuItem value="Emergency Leave">Emergency Leave</MenuItem>
                                 <MenuItem value="Maternity Leave">Maternity Leave</MenuItem>
                                 <MenuItem value="Paternity Leave">Paternity Leave</MenuItem>
                                 <MenuItem value="Unpaid Leave">Unpaid Leave</MenuItem>
@@ -159,10 +179,17 @@ const LeaveRequest = ({ open, onClose, onSuccess, editLeave = null }) => {
                                 disabled
                                 label="Number of Days"
                                 value={formData.numberOfDays}
-                                InputProps={{
-                                    readOnly: true,
-                                }}
+                                InputProps={{ readOnly: true }}
                             />
+                        </Grid>
+
+                        {/* Date restriction notice */}
+                        <Grid item xs={12}>
+                            <Alert severity={isSameDayAllowed ? 'success' : 'info'} sx={{ py: 0.5 }}>
+                                {isSameDayAllowed
+                                    ? '✅ Same-day application allowed for Sick Leave and Emergency Leave.'
+                                    : '⚠️ Only Sick Leave and Emergency Leave can be applied on the current date. Please select a future start date.'}
+                            </Alert>
                         </Grid>
 
                         <Grid item xs={12} md={6}>
@@ -175,9 +202,8 @@ const LeaveRequest = ({ open, onClose, onSuccess, editLeave = null }) => {
                                 value={formData.startDate}
                                 onChange={handleChange}
                                 InputLabelProps={{ shrink: true }}
-                                inputProps={{
-                                    min: new Date().toISOString().split('T')[0]
-                                }}
+                                inputProps={{ min: minStartDate }}
+                                helperText={isSameDayAllowed ? 'Today or future date allowed' : 'Must be a future date'}
                             />
                         </Grid>
 
@@ -192,7 +218,7 @@ const LeaveRequest = ({ open, onClose, onSuccess, editLeave = null }) => {
                                 onChange={handleChange}
                                 InputLabelProps={{ shrink: true }}
                                 inputProps={{
-                                    min: formData.startDate || new Date().toISOString().split('T')[0]
+                                    min: formData.startDate || minStartDate
                                 }}
                             />
                         </Grid>

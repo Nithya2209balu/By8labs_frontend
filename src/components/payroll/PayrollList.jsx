@@ -28,7 +28,7 @@ import {
     ListItemIcon,
     ListItemText
 } from '@mui/material';
-import { Download, Visibility, Search, MoreVert } from '@mui/icons-material';
+import { Download, Visibility, Search, MoreVert, Close } from '@mui/icons-material';
 import { payrollAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import SalarySlipView from './SalarySlipView';
@@ -538,6 +538,23 @@ const PayrollList = () => {
                     }
                 }}
             >
+                <DialogTitle sx={{ p: 0, position: 'relative' }}>
+                    <IconButton
+                        onClick={() => setViewDialogOpen(false)}
+                        sx={{
+                            position: 'absolute',
+                            top: 12,
+                            right: 12,
+                            zIndex: 10,
+                            bgcolor: 'rgba(0,0,0,0.3)',
+                            color: 'white',
+                            '&:hover': { bgcolor: 'rgba(0,0,0,0.5)' },
+                        }}
+                        size="small"
+                    >
+                        <Close fontSize="small" />
+                    </IconButton>
+                </DialogTitle>
                 <DialogContent sx={{ p: 0 }}>
                     {selectedPayroll && <SalarySlipView payroll={selectedPayroll} />}
                 </DialogContent>

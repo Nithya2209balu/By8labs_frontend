@@ -13,7 +13,14 @@ import {
     CircularProgress,
     Button,
     Alert,
-    Snackbar
+    Snackbar,
+    Tooltip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    TextField,
+    Chip
 } from '@mui/material';
 import {
     People,
@@ -43,6 +50,12 @@ const Dashboard = () => {
     const [markingAttendance, setMarkingAttendance] = useState(false);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [snackMessage, setSnackMessage] = useState({ open: false, text: '', severity: 'success' });
+
+    // Permission dialog state
+    const [permissionDialog, setPermissionDialog] = useState(false);
+    const [permissionFrom, setPermissionFrom] = useState('');
+    const [permissionTo, setPermissionTo] = useState('');
+    const [permissionError, setPermissionError] = useState('');
 
     useEffect(() => {
         fetchStats();
@@ -76,22 +89,61 @@ const Dashboard = () => {
         }
     };
 
-    const handleMarkAttendance = async (status) => {
+    const handleMarkAttendance = async (status, extraData = {}) => {
+        // Front-end guard — show warning if already marked today
+        if (todayAttendance) {
+            setSnackMessage({
+                open: true,
+                text: `⚠️ Attendance already marked as "${todayAttendance.status}" today. You can only mark attendance once per day.`,
+                severity: 'warning'
+            });
+            return;
+        }
         try {
             setMarkingAttendance(true);
-            await attendanceAPI.markAttendance({ status });
-            setSnackMessage({ open: true, text: `Attendance marked as ${status} successfully!`, severity: 'success' });
-            setRefreshTrigger(prev => prev + 1); // Trigger reload of stats and calendar
+            await attendanceAPI.markAttendance({ status, ...extraData });
+            setSnackMessage({ open: true, text: `✅ Attendance marked as ${status} successfully!`, severity: 'success' });
+            setRefreshTrigger(prev => prev + 1);
         } catch (error) {
             setSnackMessage({
                 open: true,
                 text: error.response?.data?.message || 'Failed to mark attendance',
-                severity: 'error'
+                severity: error.response?.data?.alreadyMarked ? 'warning' : 'error'
             });
         } finally {
             setMarkingAttendance(false);
         }
     };
+
+    const handlePermissionClick = () => {
+        // Also block permission if another status was already marked
+        if (todayAttendance) {
+            setSnackMessage({
+                open: true,
+                text: `⚠️ Attendance already marked as "${todayAttendance.status}" today. You can only mark attendance once per day.`,
+                severity: 'warning'
+            });
+            return;
+        }
+        setPermissionFrom('');
+        setPermissionTo('');
+        setPermissionError('');
+        setPermissionDialog(true);
+    };
+
+    const handlePermissionSubmit = async () => {
+        if (!permissionFrom || !permissionTo) {
+            setPermissionError('Please select both From Time and To Time.');
+            return;
+        }
+        if (permissionFrom >= permissionTo) {
+            setPermissionError('"To Time" must be after "From Time".');
+            return;
+        }
+        setPermissionDialog(false);
+        await handleMarkAttendance('Permission', { permissionFrom, permissionTo });
+    };
+
 
     const handleCloseSnack = () => {
         setSnackMessage({ ...snackMessage, open: false });
@@ -294,61 +346,142 @@ const Dashboard = () => {
             ) : (
                 /* Full Dashboard for HR or Approved Employees */
                 <>
-                    {/* Mark Attendance Buttons - Top Left */}
-                    <Box sx={{ mb: 3 }}>
-                        <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-                            Mark Today's Attendance: {todayAttendance ? <Box component="span" sx={{ color: 'text.secondary', fontSize: '0.9em' }}>
-                                (Current: <strong>{todayAttendance.status}</strong>)
-                            </Box> : ''}
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                            <Button
-                                variant={todayAttendance?.status === 'Present' ? "outlined" : "contained"}
-                                color="success"
-                                startIcon={<CheckCircle />}
-                                onClick={() => handleMarkAttendance('Present')}
-                                disabled={markingAttendance}
-                                sx={{
-                                    fontWeight: 'bold',
-                                    backgroundColor: todayAttendance?.status === 'Present' ? 'transparent' : '#2e7d32',
-                                    color: todayAttendance?.status === 'Present' ? '#2e7d32' : 'white',
-                                    '&:hover': { backgroundColor: todayAttendance?.status === 'Present' ? 'rgba(46, 125, 50, 0.1)' : '#1b5e20' }
-                                }}
-                            >
-                                Present
-                            </Button>
-                            <Button
-                                variant={todayAttendance?.status === 'Permission' ? "outlined" : "contained"}
-                                color="info"
-                                startIcon={<AccessTime />}
-                                onClick={() => handleMarkAttendance('Permission')}
-                                disabled={markingAttendance}
-                                sx={{
-                                    fontWeight: 'bold',
-                                    backgroundColor: todayAttendance?.status === 'Permission' ? 'transparent' : '#0288d1',
-                                    color: todayAttendance?.status === 'Permission' ? '#0288d1' : 'white',
-                                    '&:hover': { backgroundColor: todayAttendance?.status === 'Permission' ? 'rgba(2, 136, 209, 0.1)' : '#01579b' }
-                                }}
-                            >
-                                Permission
-                            </Button>
-                            <Button
-                                variant={todayAttendance?.status === 'Absent' ? "outlined" : "contained"}
-                                color="error"
-                                startIcon={<Cancel />}
-                                onClick={() => handleMarkAttendance('Absent')}
-                                disabled={markingAttendance}
-                                sx={{
-                                    fontWeight: 'bold',
-                                    backgroundColor: todayAttendance?.status === 'Absent' ? 'transparent' : '#d32f2f',
-                                    color: todayAttendance?.status === 'Absent' ? '#d32f2f' : 'white',
-                                    '&:hover': { backgroundColor: todayAttendance?.status === 'Absent' ? 'rgba(211, 47, 47, 0.1)' : '#c62828' }
-                                }}
-                            >
-                                Absent
-                            </Button>
+                    {/* ── Mark Attendance (Employees only) ── */}
+                    {!isHR && user?.employeeId ? (
+                        <Box sx={{ mb: 3 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+                                <Typography variant="h6">
+                                    Mark Today's Attendance
+                                </Typography>
+                                {todayAttendance && (
+                                    <Chip
+                                        label={`✓ ${todayAttendance.status}${
+                                            todayAttendance.status === 'Permission' && todayAttendance.permissionFrom
+                                                ? ` (${todayAttendance.permissionFrom} – ${todayAttendance.permissionTo})`
+                                                : ''
+                                        }`}
+                                        color={todayAttendance.status === 'Present' ? 'success' : todayAttendance.status === 'Absent' ? 'error' : 'info'}
+                                        size="small"
+                                        sx={{ fontWeight: 600 }}
+                                    />
+                                )}
+                            </Box>
+
+                            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                                <Button
+                                    variant="contained"
+                                    color="success"
+                                    startIcon={<CheckCircle />}
+                                    onClick={() => handleMarkAttendance('Present')}
+                                    disabled={markingAttendance}
+                                    sx={{ fontWeight: 'bold', backgroundColor: '#2e7d32', '&:hover': { backgroundColor: '#1b5e20' } }}
+                                >
+                                    Present
+                                </Button>
+
+                                <Tooltip title="Specify from/to time for permission" placement="top" arrow>
+                                    <span>
+                                        <Button
+                                            variant="contained"
+                                            color="info"
+                                            startIcon={<AccessTime />}
+                                            onClick={handlePermissionClick}
+                                            disabled={markingAttendance}
+                                            sx={{ fontWeight: 'bold', backgroundColor: '#0288d1', '&:hover': { backgroundColor: '#01579b' } }}
+                                        >
+                                            Permission
+                                        </Button>
+                                    </span>
+                                </Tooltip>
+
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    startIcon={<Cancel />}
+                                    onClick={() => handleMarkAttendance('Absent')}
+                                    disabled={markingAttendance}
+                                    sx={{ fontWeight: 'bold', backgroundColor: '#d32f2f', '&:hover': { backgroundColor: '#c62828' } }}
+                                >
+                                    Absent
+                                </Button>
+                            </Box>
+
+                            {todayAttendance ? (
+                                <Alert severity="warning" sx={{ mt: 1.5, py: 0.5 }}>
+                                    ⚠️ Attendance already marked for today. You cannot mark again.
+                                </Alert>
+                            ) : (
+                                <Alert severity="info" sx={{ mt: 1.5, py: 0.5 }} icon={<AccessTime fontSize="inherit" />}>
+                                    <strong>Permission</strong> — click to enter your start &amp; end time
+                                </Alert>
+                            )}
                         </Box>
-                    </Box>
+                    ) : isHR ? (
+                        <Box sx={{ mb: 3 }}>
+                            <Alert severity="info" sx={{ py: 0.5 }}>
+                                To mark attendance for employees, go to the <strong>Attendance</strong> module.
+                            </Alert>
+                        </Box>
+                    ) : null}
+
+
+                    {/* ── Permission Time Dialog ── */}
+                    <Dialog
+                        open={permissionDialog}
+                        onClose={() => setPermissionDialog(false)}
+                        maxWidth="xs"
+                        fullWidth
+                    >
+                        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <AccessTime color="info" />
+                            Permission Time
+                        </DialogTitle>
+                        <DialogContent>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                Please specify the time range for your permission leave today.
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <TextField
+                                    label="From Time"
+                                    type="time"
+                                    value={permissionFrom}
+                                    onChange={(e) => { setPermissionFrom(e.target.value); setPermissionError(''); }}
+                                    InputLabelProps={{ shrink: true }}
+                                    inputProps={{ step: 300 }}
+                                    fullWidth
+                                    required
+                                />
+                                <TextField
+                                    label="To Time"
+                                    type="time"
+                                    value={permissionTo}
+                                    onChange={(e) => { setPermissionTo(e.target.value); setPermissionError(''); }}
+                                    InputLabelProps={{ shrink: true }}
+                                    inputProps={{ step: 300 }}
+                                    fullWidth
+                                    required
+                                />
+                                {permissionError && (
+                                    <Alert severity="error" sx={{ py: 0.5 }}>{permissionError}</Alert>
+                                )}
+                            </Box>
+                        </DialogContent>
+                        <DialogActions sx={{ px: 3, pb: 2 }}>
+                            <Button onClick={() => setPermissionDialog(false)} disabled={markingAttendance}>
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="info"
+                                onClick={handlePermissionSubmit}
+                                disabled={markingAttendance || !permissionFrom || !permissionTo}
+                                startIcon={<AccessTime />}
+                            >
+                                {markingAttendance ? 'Submitting...' : 'Submit Permission'}
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
+
 
                     {/* HR: Pending Access Requests */}
                     {isHR && accessRequests.length > 0 && (
