@@ -114,49 +114,52 @@ const Reports = () => {
                         params = { department: filters.department, search: filters.search };
                     } else if (reportType === 'department-wise') {
                         endpoint = '/reports/employees/department-wise';
+                        params = { search: filters.search };
                     } else if (reportType === 'status-report') {
                         endpoint = '/reports/employees/status';
+                        params = { search: filters.search };
                     }
                     break;
 
                 case 1: // Attendance
                     if (reportType === 'daily') {
                         endpoint = '/reports/attendance/daily';
-                        params = { date: filters.date };
+                        params = { date: filters.date, search: filters.search };
                     } else if (reportType === 'monthly') {
                         endpoint = '/reports/attendance/monthly';
-                        params = { month: filters.month };
+                        params = { month: filters.month, search: filters.search };
                     } else if (reportType === 'absent-late') {
                         endpoint = '/reports/attendance/absent-late';
-                        params = { startDate: filters.startDate, endDate: filters.endDate };
+                        params = { startDate: filters.startDate, endDate: filters.endDate, search: filters.search };
                     }
                     break;
 
                 case 2: // Payroll
                     if (reportType === 'monthly-salary') {
                         endpoint = '/reports/payroll/monthly';
-                        params = { month: filters.month };
+                        params = { month: filters.month, search: filters.search };
                     } else if (reportType === 'lop') {
                         endpoint = '/reports/payroll/lop';
-                        params = { startDate: filters.startDate, endDate: filters.endDate };
+                        params = { startDate: filters.startDate, endDate: filters.endDate, search: filters.search };
                     } else if (reportType === 'bank-payment') {
                         endpoint = '/reports/payroll/bank-payment';
-                        params = { month: filters.month };
+                        params = { month: filters.month, search: filters.search };
                     }
                     break;
 
                 case 3: // Recruitment
                     if (reportType === 'candidates') {
                         endpoint = '/reports/recruitment/candidates';
-                        params = { status: filters.status };
+                        params = { status: filters.status, search: filters.search };
                     } else if (reportType === 'interviews') {
                         endpoint = '/reports/recruitment/interviews';
-                        params = { startDate: filters.startDate, endDate: filters.endDate };
+                        params = { startDate: filters.startDate, endDate: filters.endDate, search: filters.search };
                     } else if (reportType === 'selections') {
                         endpoint = '/reports/recruitment/selections';
-                        params = { startDate: filters.startDate, endDate: filters.endDate };
+                        params = { startDate: filters.startDate, endDate: filters.endDate, search: filters.search };
                     } else if (reportType === 'interviewer-wise') {
                         endpoint = '/reports/recruitment/interviewer-wise';
+                        params = { search: filters.search };
                     }
                     break;
 
@@ -310,7 +313,7 @@ const Reports = () => {
         return (
             <Paper sx={{ p: 2, mb: 3 }}>
                 <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                         <TextField
                             select
                             fullWidth
@@ -324,6 +327,19 @@ const Reports = () => {
                                 </MenuItem>
                             ))}
                         </TextField>
+                    </Grid>
+
+                    {/* Always-visible search */}
+                    <Grid item xs={12} md={3}>
+                        <TextField
+                            fullWidth
+                            label="Search by Name / ID / Keyword"
+                            value={filters.search}
+                            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                            InputProps={{
+                                startAdornment: <Search />
+                            }}
+                        />
                     </Grid>
 
                     {/* Date filters based on report type */}
@@ -376,20 +392,6 @@ const Reports = () => {
                                 />
                             </Grid>
                         </>
-                    )}
-
-                    {reportType === 'employee-list' && (
-                        <Grid item xs={12} md={3}>
-                            <TextField
-                                fullWidth
-                                label="Search by Name/ID"
-                                value={filters.search}
-                                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                                InputProps={{
-                                    startAdornment: <Search />
-                                }}
-                            />
-                        </Grid>
                     )}
 
                     <Grid item xs={12} md={2}>

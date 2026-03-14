@@ -7,12 +7,9 @@ import {
     InputAdornment, Tooltip, Alert, CircularProgress
 } from '@mui/material';
 import {
-    Add, Edit, Delete, Search, PersonAdd, UploadFile, CheckCircle, Cancel
+    Add, Edit, Delete, Search, PersonAdd, UploadFile, CheckCircle, Cancel, ThumbUp, ThumbDown
 } from '@mui/icons-material';
-
-const API = 'https://by8labs-backend.onrender.com/api';
-const getToken = () => localStorage.getItem('token');
-const headers = () => ({ Authorization: `Bearer ${getToken()}` });
+import { adminStudentAPI } from '../../services/studentPortalAPI';
 
 const GENDER = ['Male', 'Female', 'Other'];
 const STATUS = ['Active', 'Inactive'];
@@ -24,100 +21,75 @@ const emptyForm = {
 
 export default function StudentManagement() {
     const [students, setStudents] = useState([]);
-    const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
-    const [filterCourse, setFilterCourse] = useState('');
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [deleteDialog, setDeleteDialog] = useState(null);
-    const [form, setForm] = useState(emptyForm);
-    const [editId, setEditId] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [search, setSearch] = useState('');
 
     const fetchStudents = async () => {
         try {
             setLoading(true);
-            const params = {};
-            if (search) params.search = search;
-            if (filterStatus) params.status = filterStatus;
-            if (filterCourse) params.course = filterCourse;
-            const res = await axios.get(`${API}/students`, { headers: headers(), params });
-            setStudents(res.data.students || []);
+            const res = await adminStudentAPI.getAllStudents();
+            let data = res.data.data || [];
+            
+            // Client-side filtering if API doesn't support them out of the box
+            if (search) {
+                const s = search.toLowerCase();
+                data = data.filter(st => st.name?.toLowerCase().includes(s) || st.email?.toLowerCase().includes(s));
+            }
+            if (filterStatus) {
+                data = data.filter(st => {
+                    const isApproved = st.isApproved;
+                    if (filterStatus === 'Active' && !isApproved) return false;
+                    if (filterStatus === 'Inactive' && isApproved) return false;
+                    return true;
+                });
+            }
+            // Cannot reliably filter by course if the new API doesn't return full course details
+            
+            setStudents(data);
         } catch (err) {
-            setError('Failed to load students');
+            setError(err.response?.data?.message || 'Failed to load students');
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchCourses = async () => {
-        const res = await axios.get(`${API}/student-courses`, { headers: headers() });
-        setCourses(res.data || []);
-    };
+    useEffect(() => { fetchStudents(); }, [search, filterStatus]);
 
-    useEffect(() => { fetchStudents(); }, [search, filterStatus, filterCourse]);
-    useEffect(() => { fetchCourses(); }, []);
-
-    const openAdd = () => { setForm(emptyForm); setEditId(null); setDialogOpen(true); setError(''); };
-    const openEdit = (s) => {
-        setForm({
-            name: s.name || '', email: s.email || '', phone: s.phone || '',
-            dateOfBirth: s.dateOfBirth ? s.dateOfBirth.slice(0, 10) : '',
-            gender: s.gender || '', address: s.address || '', guardianName: s.guardianName || '',
-            guardianPhone: s.guardianPhone || '', course: s.course?._id || '',
-            enrollmentDate: s.enrollmentDate ? s.enrollmentDate.slice(0, 10) : '',
-            status: s.status || 'Active', notes: s.notes || '',
-        });
-        setEditId(s._id);
-        setDialogOpen(true);
-        setError('');
-    };
-
-    const handleSave = async () => {
-        if (!form.name.trim()) { setError('Name is required'); return; }
+    const handleApprove = async (id) => {
         try {
             setSaving(true);
-            if (editId) {
-                await axios.put(`${API}/students/${editId}`, form, { headers: headers() });
-                setSuccess('Student updated successfully');
-            } else {
-                await axios.post(`${API}/students`, form, { headers: headers() });
-                setSuccess('Student added successfully');
-            }
-            setDialogOpen(false);
+            await adminStudentAPI.approveStudent(id);
+            setSuccess('Student approved successfully');
             fetchStudents();
         } catch (err) {
-            setError(err.response?.data?.message || 'Save failed');
+            setError(err.response?.data?.message || 'Failed to approve student');
         } finally {
             setSaving(false);
         }
     };
 
-    const handleDelete = async () => {
+    const handleReject = async (id) => {
+        if (!window.confirm('Are you sure you want to reject this student?')) return;
         try {
-            await axios.delete(`${API}/students/${deleteDialog}`, { headers: headers() });
-            setDeleteDialog(null);
-            setSuccess('Student deleted');
+            setSaving(true);
+            await adminStudentAPI.rejectStudent(id);
+            setSuccess('Student rejected');
             fetchStudents();
-        } catch {
-            setError('Delete failed');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to reject student');
+        } finally {
+            setSaving(false);
         }
-    };
-
-    const handleStatusToggle = async (s) => {
-        const newStatus = s.status === 'Active' ? 'Inactive' : 'Active';
-        await axios.put(`${API}/students/${s._id}/status`, { status: newStatus }, { headers: headers() });
-        fetchStudents();
     };
 
     return (
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h5" fontWeight={700} color="primary.dark">👨‍🎓 Student Management</Typography>
-                <Button variant="contained" startIcon={<Add />} onClick={openAdd}>Add Student</Button>
             </Box>
 
             {success && <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 2 }}>{success}</Alert>}
@@ -140,13 +112,6 @@ export default function StudentManagement() {
                     </FormControl>
                 </Grid>
                 <Grid item xs={6} sm={4}>
-                    <FormControl fullWidth size="small">
-                        <InputLabel>Course</InputLabel>
-                        <Select value={filterCourse} label="Course" onChange={e => setFilterCourse(e.target.value)}>
-                            <MenuItem value="">All Courses</MenuItem>
-                            {courses.map(c => <MenuItem key={c._id} value={c._id}>{c.courseName}</MenuItem>)}
-                        </Select>
-                    </FormControl>
                 </Grid>
             </Grid>
 
@@ -173,29 +138,43 @@ export default function StudentManagement() {
                                         <Box display="flex" alignItems="center" gap={1}>
                                             <Avatar sx={{ width: 32, height: 32, bgcolor: '#10b981', fontSize: '0.8rem' }}>{s.name?.[0]}</Avatar>
                                             <Box>
-                                                <Typography variant="body2" fontWeight={600}>{s.name}</Typography>
+                                                <Typography variant="body2" fontWeight={600}>{s.name || s.username}</Typography>
                                                 <Typography variant="caption" color="text.secondary">{s.gender || '—'}</Typography>
                                             </Box>
                                         </Box>
                                     </TableCell>
-                                    <TableCell><Chip label={s.studentId} size="small" variant="outlined" color="primary" /></TableCell>
+                                    <TableCell><Chip label={s.studentId || s._id.slice(-6).toUpperCase()} size="small" variant="outlined" color="primary" /></TableCell>
                                     <TableCell>{s.course?.courseName || <Typography variant="caption" color="text.secondary">Unassigned</Typography>}</TableCell>
                                     <TableCell>
                                         <Typography variant="body2">{s.email || '—'}</Typography>
                                         <Typography variant="caption" color="text.secondary">{s.phone || '—'}</Typography>
                                     </TableCell>
-                                    <TableCell>{s.enrollmentDate ? new Date(s.enrollmentDate).toLocaleDateString() : '—'}</TableCell>
+                                    <TableCell>{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '—'}</TableCell>
                                     <TableCell>
-                                        <Chip label={s.status} size="small" color={s.status === 'Active' ? 'success' : 'default'} />
+                                        {s.isApproved ? (
+                                            <Chip label="Approved" size="small" color="success" />
+                                        ) : (
+                                            <Chip label="Pending" size="small" color="warning" />
+                                        )}
                                     </TableCell>
                                     <TableCell align="right">
-                                        <Tooltip title="Edit"><IconButton size="small" color="primary" onClick={() => openEdit(s)}><Edit fontSize="small" /></IconButton></Tooltip>
-                                        <Tooltip title={s.status === 'Active' ? 'Deactivate' : 'Activate'}>
-                                            <IconButton size="small" color={s.status === 'Active' ? 'warning' : 'success'} onClick={() => handleStatusToggle(s)}>
-                                                {s.status === 'Active' ? <Cancel fontSize="small" /> : <CheckCircle fontSize="small" />}
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Delete"><IconButton size="small" color="error" onClick={() => setDeleteDialog(s._id)}><Delete fontSize="small" /></IconButton></Tooltip>
+                                        {!s.isApproved && (
+                                            <>
+                                                <Tooltip title="Approve">
+                                                    <IconButton size="small" color="success" onClick={() => handleApprove(s._id)} disabled={saving}>
+                                                        <ThumbUp fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title="Reject">
+                                                    <IconButton size="small" color="error" onClick={() => handleReject(s._id)} disabled={saving}>
+                                                        <ThumbDown fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </>
+                                        )}
+                                        {s.isApproved && (
+                                            <Chip label="Verified" size="small" color="info" variant="outlined" icon={<CheckCircle fontSize="small" />} />
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -203,66 +182,6 @@ export default function StudentManagement() {
                     </Table>
                 </TableContainer>
             )}
-
-            {/* Add/Edit Dialog */}
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
-                <DialogTitle sx={{ fontWeight: 700 }}>{editId ? 'Edit Student' : 'Add New Student'}</DialogTitle>
-                <DialogContent>
-                    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-                    <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                        <Grid item xs={12} sm={6}><TextField fullWidth label="Full Name *" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} size="small" /></Grid>
-                        <Grid item xs={12} sm={6}><TextField fullWidth label="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} size="small" /></Grid>
-                        <Grid item xs={12} sm={6}><TextField fullWidth label="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} size="small" /></Grid>
-                        <Grid item xs={12} sm={6}><TextField fullWidth label="Date of Birth" type="date" value={form.dateOfBirth} onChange={e => setForm({ ...form, dateOfBirth: e.target.value })} size="small" InputLabelProps={{ shrink: true }} /></Grid>
-                        <Grid item xs={12} sm={6}>
-                            <FormControl fullWidth size="small">
-                                <InputLabel>Gender</InputLabel>
-                                <Select value={form.gender} label="Gender" onChange={e => setForm({ ...form, gender: e.target.value })}>
-                                    {GENDER.map(g => <MenuItem key={g} value={g}>{g}</MenuItem>)}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <FormControl fullWidth size="small">
-                                <InputLabel>Course</InputLabel>
-                                <Select value={form.course} label="Course" onChange={e => setForm({ ...form, course: e.target.value })}>
-                                    <MenuItem value="">None</MenuItem>
-                                    {courses.map(c => <MenuItem key={c._id} value={c._id}>{c.courseName}</MenuItem>)}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={6}><TextField fullWidth label="Guardian Name" value={form.guardianName} onChange={e => setForm({ ...form, guardianName: e.target.value })} size="small" /></Grid>
-                        <Grid item xs={12} sm={6}><TextField fullWidth label="Guardian Phone" value={form.guardianPhone} onChange={e => setForm({ ...form, guardianPhone: e.target.value })} size="small" /></Grid>
-                        <Grid item xs={12} sm={6}><TextField fullWidth label="Enrollment Date" type="date" value={form.enrollmentDate} onChange={e => setForm({ ...form, enrollmentDate: e.target.value })} size="small" InputLabelProps={{ shrink: true }} /></Grid>
-                        <Grid item xs={12} sm={6}>
-                            <FormControl fullWidth size="small">
-                                <InputLabel>Status</InputLabel>
-                                <Select value={form.status} label="Status" onChange={e => setForm({ ...form, status: e.target.value })}>
-                                    {STATUS.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12}><TextField fullWidth label="Address" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} size="small" multiline rows={2} /></Grid>
-                        <Grid item xs={12}><TextField fullWidth label="Notes" value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} size="small" multiline rows={2} /></Grid>
-                    </Grid>
-                </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-                    <Button variant="contained" onClick={handleSave} disabled={saving}>
-                        {saving ? 'Saving...' : editId ? 'Update' : 'Add Student'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Delete Confirm */}
-            <Dialog open={!!deleteDialog} onClose={() => setDeleteDialog(null)}>
-                <DialogTitle>Confirm Delete</DialogTitle>
-                <DialogContent><Typography>Are you sure you want to delete this student? This action cannot be undone.</Typography></DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setDeleteDialog(null)}>Cancel</Button>
-                    <Button variant="contained" color="error" onClick={handleDelete}>Delete</Button>
-                </DialogActions>
-            </Dialog>
         </Box>
     );
 }

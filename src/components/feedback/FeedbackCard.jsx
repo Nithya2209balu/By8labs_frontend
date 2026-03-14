@@ -115,7 +115,7 @@ const FeedbackCard = ({ feedback, onReact, onComment, onDelete, onRefresh }) => 
     const canEdit = feedback.submittedBy?._id === user?._id || isHR;
 
     return (
-        <Card elevation={3}>
+        <Card id={feedback._id} elevation={3}>
             {/* Header */}
             <CardHeader
                 avatar={
@@ -298,12 +298,12 @@ const FeedbackCard = ({ feedback, onReact, onComment, onDelete, onRefresh }) => 
                     </Button>
 
                     {/* View Count */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
+                    {/* <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
                         <Visibility fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
                         <Typography variant="caption" color="text.secondary">
                             {feedback.viewCount || 0} views
                         </Typography>
-                    </Box>
+                    </Box> */}
                 </Box>
             </CardActions>
 

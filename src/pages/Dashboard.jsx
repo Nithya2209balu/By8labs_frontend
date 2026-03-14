@@ -36,6 +36,7 @@ import {
 } from '@mui/icons-material';
 import AttendanceCalendar from '../components/dashboard/AttendanceCalendar';
 import { attendanceAPI } from '../services/api';
+import StudentDashboard from './studentPortal/StudentDashboard';
 
 const Dashboard = () => {
     const { user, isHR } = useAuth();
@@ -283,6 +284,10 @@ const Dashboard = () => {
     const hasPendingRequest = !isHR && !user?.hasDataAccess && accessRequests.some(req => req.status === 'Pending' && req.employeeId?._id === (user?._id || user?.id));
 
     const visibleStats = statsData.filter(stat => stat.visible);
+
+    if (user?.role === 'Student') {
+        return <StudentDashboard />;
+    }
 
     if (loading) {
         return (

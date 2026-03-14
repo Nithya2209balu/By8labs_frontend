@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
     Box,
     Typography,
@@ -19,6 +20,7 @@ import AnnouncementForm from '../components/announcements/AnnouncementForm';
 
 const AnnouncementManagement = () => {
     const { isHR } = useAuth();
+    const location = useLocation();
     const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -30,6 +32,22 @@ const AnnouncementManagement = () => {
     useEffect(() => {
         loadAnnouncements();
     }, []);
+
+    // Auto-scroll to item from notification hash
+    useEffect(() => {
+        if (loading) return;
+        const hash = location.hash?.replace('#', '');
+        if (!hash) return;
+        const timer = setTimeout(() => {
+            const el = document.getElementById(hash);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('notif-highlight');
+                setTimeout(() => el.classList.remove('notif-highlight'), 2500);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [loading, location.hash]);
 
     const loadAnnouncements = async () => {
         try {

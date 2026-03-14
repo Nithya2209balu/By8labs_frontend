@@ -30,7 +30,15 @@ import EmailManagement from './pages/EmailManagement';
 import Feedback from './pages/Feedback';
 import PerformanceManagement from './pages/PerformanceManagement';
 import DocumentManagement from './pages/DocumentManagement';
-import StudentModule from './pages/StudentModule';
+import StudentModule from './pages/student/StudentModule';
+import StudentAssignment from './pages/student/StudentAssignment';
+import CourseCatalog from './pages/studentPortal/CourseCatalog';
+import CourseDetails from './pages/studentPortal/CourseDetails';
+import LessonViewer from './pages/studentPortal/LessonViewer';
+import StudentAttendance from './pages/studentPortal/StudentAttendance';
+import Leaderboard from './pages/studentPortal/Leaderboard';
+import StudentNotifications from './pages/studentPortal/StudentNotifications';
+import MyCourses from './pages/studentPortal/MyCourses';
 
 // Shared component overrides (same for both themes)
 const sharedComponents = {
@@ -243,11 +251,6 @@ const employeeTheme = createTheme({
             light: '#0f172a ',
             dark: '#0f172a ',
             contrastText: '#ffffff',
-        },
-        success: {
-            main: '#4caf50',
-            light: '#80e27e',
-            dark: '#087f23',
         },
         error: {
             main: '#ef4444',
@@ -616,6 +619,88 @@ function AppRoutes() {
                     <ProtectedRoute requiredRole="HR">
                         <AppLayout>
                             <StudentModule />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/student-assignments"
+                element={
+                    <ProtectedRoute requiredRole="HR">
+                        <AppLayout>
+                            <StudentAssignment />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            
+            {/* Student Portal Routes */}
+            <Route
+                path="/student-courses"
+                element={
+                    <ProtectedRoute requiredRole="Student">
+                        <AppLayout>
+                            <CourseCatalog />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/my-courses"
+                element={
+                    <ProtectedRoute requiredRole="Student">
+                        <AppLayout>
+                            <MyCourses />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/student-courses/:id"
+                element={
+                    <ProtectedRoute requiredRole="Student">
+                        <AppLayout>
+                            <CourseDetails />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/student-lessons/:lessonId/mcq"
+                element={
+                    <ProtectedRoute requiredRole="Student">
+                        <AppLayout>
+                            <LessonViewer />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/student-attendance"
+                element={
+                    <ProtectedRoute requiredRole="Student">
+                        <AppLayout>
+                            <StudentAttendance />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/student-leaderboard"
+                element={
+                    <ProtectedRoute requiredRole="Student">
+                        <AppLayout>
+                            <Leaderboard />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/student-notifications"
+                element={
+                    <ProtectedRoute requiredRole="Student">
+                        <AppLayout>
+                            <StudentNotifications />
                         </AppLayout>
                     </ProtectedRoute>
                 }

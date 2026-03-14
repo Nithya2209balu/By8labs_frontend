@@ -34,7 +34,7 @@ const AnnouncementCard = ({ announcement, isHR, onEdit, onDelete }) => {
 
     return (
         <>
-            <Card sx={{ mb: 3, boxShadow: 3 }}>
+            <Card id={announcement._id} sx={{ mb: 3, boxShadow: 3 }}>
                 <CardContent>
                     {/* Header with Title and Actions */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>

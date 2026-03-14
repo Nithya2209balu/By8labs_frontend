@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Box,
     Container,
     Typography,
     Tabs,
     Tab,
-    Paper
+    Paper,
+    IconButton,
+    Tooltip
 } from '@mui/material';
+import { Close } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import JobList from '../components/recruitment/JobList';
 import CandidateList from '../components/recruitment/CandidateList';
@@ -15,6 +19,7 @@ import OfferManagement from '../components/recruitment/OfferManagement';
 
 const RecruitmentManagement = () => {
     const { isHR } = useAuth();
+    const navigate = useNavigate();
     const [tabValue, setTabValue] = useState(0);
 
     // Only HR can access recruitment
@@ -30,12 +35,21 @@ const RecruitmentManagement = () => {
 
     return (
         <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-            <Typography variant="h4" gutterBottom>
-                Recruitment Management
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Manage job postings, candidates, interviews, and offers
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                <Box>
+                    <Typography variant="h4" gutterBottom>
+                        Recruitment Management
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                        Manage job postings, candidates, interviews, and offers
+                    </Typography>
+                </Box>
+                <Tooltip title="Close / Go Back">
+                    <IconButton onClick={() => navigate(-1)} sx={{ mt: 0.5 }}>
+                        <Close />
+                    </IconButton>
+                </Tooltip>
+            </Box>
 
             <Paper sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
                 <Tabs
@@ -47,7 +61,7 @@ const RecruitmentManagement = () => {
                     <Tab label="Job Postings" />
                     <Tab label="Candidates" />
                     <Tab label="Interviews" />
-                    <Tab label="Offers" />
+                    {/* <Tab label="Offers" /> */}
                 </Tabs>
             </Paper>
 

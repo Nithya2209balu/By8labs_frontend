@@ -30,6 +30,7 @@ const LeaveManagement = () => {
     const [editingLeave, setEditingLeave] = useState(null);
     const [tabValue, setTabValue] = useState(0);
     const [filters, setFilters] = useState({ status: '' });
+    const [dateFilter, setDateFilter] = useState({ startDate: '', endDate: '' });
 
     useEffect(() => {
         loadData();
@@ -123,11 +124,18 @@ const LeaveManagement = () => {
     };
 
     const getFilteredLeaves = () => {
-        if (tabValue === 0) return leaves;
-        if (tabValue === 1) return leaves.filter(l => l.status === 'Pending');
-        if (tabValue === 2) return leaves.filter(l => l.status === 'Approved');
-        if (tabValue === 3) return leaves.filter(l => l.status === 'Rejected');
-        return leaves;
+        let result = leaves;
+        if (tabValue === 1) result = result.filter(l => l.status === 'Pending');
+        else if (tabValue === 2) result = result.filter(l => l.status === 'Approved');
+        else if (tabValue === 3) result = result.filter(l => l.status === 'Rejected');
+
+        if (dateFilter.startDate) {
+            result = result.filter(l => new Date(l.startDate) >= new Date(dateFilter.startDate));
+        }
+        if (dateFilter.endDate) {
+            result = result.filter(l => new Date(l.endDate) <= new Date(dateFilter.endDate));
+        }
+        return result;
     };
 
     // Check if employee has data access
@@ -233,6 +241,38 @@ const LeaveManagement = () => {
                     <Tab label="Approved" />
                     <Tab label="Rejected" />
                 </Tabs>
+
+                {/* Date Range Filter */}
+                <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <TextField
+                        type="date"
+                        size="small"
+                        label="From Date"
+                        value={dateFilter.startDate}
+                        onChange={(e) => setDateFilter({ ...dateFilter, startDate: e.target.value })}
+                        InputLabelProps={{ shrink: true }}
+                        sx={{ minWidth: 160 }}
+                    />
+                    <TextField
+                        type="date"
+                        size="small"
+                        label="To Date"
+                        value={dateFilter.endDate}
+                        onChange={(e) => setDateFilter({ ...dateFilter, endDate: e.target.value })}
+                        InputLabelProps={{ shrink: true }}
+                        sx={{ minWidth: 160 }}
+                    />
+                    {(dateFilter.startDate || dateFilter.endDate) && (
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            color="inherit"
+                            onClick={() => setDateFilter({ startDate: '', endDate: '' })}
+                        >
+                            Clear Dates
+                        </Button>
+                    )}
+                </Box>
 
                 <LeaveList
                     leaves={getFilteredLeaves()}

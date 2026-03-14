@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
     Container,
     Box,
@@ -32,6 +33,9 @@ const Feedback = () => {
     const [openForm, setOpenForm] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
 
+    const location = useLocation();
+    const highlightedRef = useRef(null);
+
     useEffect(() => {
         loadFeedback();
     }, [sortBy, category, status, searchTerm]);
@@ -57,6 +61,24 @@ const Feedback = () => {
             setLoading(false);
         }
     };
+
+    // Auto-scroll to item from notification hash
+    useEffect(() => {
+        if (loading) return;
+        const hash = location.hash?.replace('#', '');
+        if (!hash) return;
+        // Small delay so cards have rendered
+        const timer = setTimeout(() => {
+            const el = document.getElementById(hash);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Add a temporary highlight
+                el.classList.add('notif-highlight');
+                setTimeout(() => el.classList.remove('notif-highlight'), 2500);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [loading, location.hash]);
 
     const handleFeedbackSubmit = async (formData) => {
         try {

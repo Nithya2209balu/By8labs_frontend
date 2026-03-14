@@ -131,6 +131,11 @@ export default function AdmissionManagement() {
             const payload = { ...form };
             if (payload.previousPercentage === '') delete payload.previousPercentage;
             if (payload.admissionFee === '') delete payload.admissionFee;
+            // Remove empty strings for ObjectId / Date fields to prevent MongoDB CastError
+            if (!payload.appliedCourse) delete payload.appliedCourse;
+            if (!payload.dateOfBirth) delete payload.dateOfBirth;
+            if (!payload.interviewDate) delete payload.interviewDate;
+            if (!payload.applicationDate) delete payload.applicationDate;
             if (editId) {
                 await axios.put(`${API}/student-admissions/${editId}`, payload, { headers: headers() });
                 setSuccess('Admission updated successfully');

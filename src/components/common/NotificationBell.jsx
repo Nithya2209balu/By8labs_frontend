@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     IconButton,
     Badge,
@@ -9,18 +10,28 @@ import {
     ListItem,
     ListItemText,
     Divider,
-    Chip
+    Chip,
+    Tooltip
 } from '@mui/material';
-import { Notifications, NotificationsNone, Campaign, Feedback } from '@mui/icons-material';
+import { Notifications, NotificationsNone, Campaign, Feedback, Close } from '@mui/icons-material';
 import axios from 'axios';
 
 const API = 'https://by8labs-backend.onrender.com/api';
 const STORAGE_KEY = 'notif_last_seen';
+const DISMISSED_KEY = 'notif_dismissed';
 
 const NotificationBell = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [dismissed, setDismissed] = useState(() => {
+        try {
+            return new Set(JSON.parse(localStorage.getItem(DISMISSED_KEY) || '[]'));
+        } catch {
+            return new Set();
+        }
+    });
+    const navigate = useNavigate();
 
     const fetchAll = async () => {
         try {
@@ -28,10 +39,10 @@ const NotificationBell = () => {
             if (!token) return;
             const headers = { Authorization: `Bearer ${token}` };
 
-            // Fetch both in parallel
+            // Fetch announcements and feedback in parallel
             const [annoRes, feedRes] = await Promise.allSettled([
                 axios.get(`${API}/announcements?limit=15`, { headers }),
-                axios.get(`${API}/feedback?limit=15`, { headers })
+                axios.get(`${API}/feedback?limit=15`, { headers }),
             ]);
 
             const announcements = (
@@ -45,6 +56,7 @@ const NotificationBell = () => {
                 body: a.content || a.description || '',
                 author: a.postedBy?.username || a.postedBy?.email || 'HR',
                 createdAt: a.createdAt,
+                navPath: '/announcements',
             }));
 
             const feedbacks = (
@@ -58,17 +70,23 @@ const NotificationBell = () => {
                 body: f.message || '',
                 author: f.submittedBy?.username || f.submittedBy?.email || 'Employee',
                 createdAt: f.createdAt,
+                navPath: '/feedback',
             }));
 
+            const emails = [];
+
             // Merge and sort newest first
-            const merged = [...announcements, ...feedbacks].sort(
+            const merged = [...announcements, ...feedbacks, ...emails].sort(
                 (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
             );
 
             setNotifications(merged);
 
             const lastSeen = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
-            const unread = merged.filter(n => new Date(n.createdAt).getTime() > lastSeen).length;
+            const dismissedSet = new Set(JSON.parse(localStorage.getItem(DISMISSED_KEY) || '[]'));
+            const unread = merged.filter(
+                n => new Date(n.createdAt).getTime() > lastSeen && !dismissedSet.has(n._id)
+            ).length;
             setUnreadCount(unread);
         } catch (err) {
             // Non-critical — silent fail
@@ -89,7 +107,25 @@ const NotificationBell = () => {
 
     const handleClose = () => setAnchorEl(null);
 
+    const handleNotificationClick = (notif) => {
+        handleClose();
+        if (notif.navPath) {
+            // Append the item id as a hash so the target page can auto-scroll to it
+            const rawId = notif._id?.toString().replace(/^email-/, '');
+            navigate(`${notif.navPath}#${rawId}`);
+        }
+    };
+
+    const handleDismiss = (e, notifId) => {
+        e.stopPropagation();
+        const next = new Set(dismissed);
+        next.add(notifId);
+        setDismissed(next);
+        localStorage.setItem(DISMISSED_KEY, JSON.stringify([...next]));
+    };
+
     const formatTime = (dateStr) => {
+        if (!dateStr) return '';
         const d = new Date(dateStr);
         const diff = Date.now() - d.getTime();
         if (diff < 60000) return 'Just now';
@@ -98,8 +134,27 @@ const NotificationBell = () => {
         return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
     };
 
-    const annoCount = notifications.filter(n => n.type === 'announcement').length;
-    const feedCount = notifications.filter(n => n.type === 'feedback').length;
+    const visibleNotifications = notifications.filter(n => !dismissed.has(n._id));
+    const annoCount = visibleNotifications.filter(n => n.type === 'announcement').length;
+    const feedCount = visibleNotifications.filter(n => n.type === 'feedback').length;
+
+    const getTypeIcon = (type) => {
+        if (type === 'announcement') return <Campaign sx={{ fontSize: 14, color: 'primary.main' }} />;
+        if (type === 'feedback') return <Feedback sx={{ fontSize: 14, color: 'warning.main' }} />;
+        return <Email sx={{ fontSize: 14, color: 'success.main' }} />;
+    };
+
+    const getTypeColor = (type) => {
+        if (type === 'announcement') return 'primary';
+        if (type === 'feedback') return 'warning';
+        return 'success';
+    };
+
+    const getBorderColor = (type) => {
+        if (type === 'announcement') return 'primary.main';
+        if (type === 'feedback') return 'warning.main';
+        return 'success.main';
+    };
 
     return (
         <>
@@ -121,8 +176,8 @@ const NotificationBell = () => {
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                 PaperProps={{
                     sx: {
-                        width: 380,
-                        maxHeight: 500,
+                        width: 400,
+                        maxHeight: 520,
                         borderRadius: 2,
                         boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
                         display: 'flex',
@@ -165,7 +220,7 @@ const NotificationBell = () => {
 
                 {/* Notification List */}
                 <Box sx={{ overflowY: 'auto', flex: 1 }}>
-                    {notifications.length === 0 ? (
+                    {visibleNotifications.length === 0 ? (
                         <Box sx={{ textAlign: 'center', py: 5 }}>
                             <NotificationsNone sx={{ fontSize: 44, color: 'text.disabled', mb: 1 }} />
                             <Typography variant="body2" color="text.secondary">
@@ -174,31 +229,33 @@ const NotificationBell = () => {
                         </Box>
                     ) : (
                         <List dense disablePadding>
-                            {notifications.map((n, i) => (
+                            {visibleNotifications.map((n, i) => (
                                 <React.Fragment key={`${n.type}-${n._id || i}`}>
                                     <ListItem
                                         alignItems="flex-start"
+                                        onClick={() => handleNotificationClick(n)}
                                         sx={{
                                             py: 1.5, px: 2,
+                                            cursor: 'pointer',
                                             borderLeft: '3px solid',
-                                            borderLeftColor: n.type === 'announcement' ? 'primary.main' : 'warning.main',
+                                            borderLeftColor: getBorderColor(n.type),
                                             '&:hover': { bgcolor: 'action.hover' },
+                                            pr: 5, // make room for close button
+                                            position: 'relative',
                                         }}
                                     >
                                         <ListItemText
                                             primary={
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.25 }}>
-                                                    {n.type === 'announcement'
-                                                        ? <Campaign sx={{ fontSize: 14, color: 'primary.main' }} />
-                                                        : <Feedback sx={{ fontSize: 14, color: 'warning.main' }} />
-                                                    }
+                                                    {getTypeIcon(n.type)}
                                                     <Chip
-                                                        label={n.type === 'announcement' ? 'Announcement' : 'Feedback'}
+                                                        label={n.type === 'announcement' ? 'Announcement' : n.type === 'feedback' ? 'Feedback' : 'Email'}
                                                         size="small"
-                                                        color={n.type === 'announcement' ? 'primary' : 'warning'}
+                                                        color={getTypeColor(n.type)}
                                                         sx={{ height: 18, fontSize: '0.65rem' }}
                                                     />
                                                     <Typography
+                                                        component="span"
                                                         variant="subtitle2"
                                                         fontWeight={600}
                                                         noWrap
@@ -208,9 +265,12 @@ const NotificationBell = () => {
                                                     </Typography>
                                                 </Box>
                                             }
+                                            secondaryTypographyProps={{ component: 'span' }}
                                             secondary={
                                                 <>
                                                     <Typography
+                                                        component="span"
+                                                        display="block"
                                                         variant="body2"
                                                         color="text.secondary"
                                                         sx={{
@@ -223,14 +283,31 @@ const NotificationBell = () => {
                                                     >
                                                         {n.body}
                                                     </Typography>
-                                                    <Typography variant="caption" color="text.disabled">
+                                                    <Typography component="span" display="block" variant="caption" color="text.disabled">
                                                         {n.author} · {formatTime(n.createdAt)}
                                                     </Typography>
                                                 </>
                                             }
                                         />
+                                        {/* Close/dismiss button */}
+                                        <Tooltip title="Dismiss">
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => handleDismiss(e, n._id)}
+                                                sx={{
+                                                    position: 'absolute',
+                                                    top: 8,
+                                                    right: 4,
+                                                    opacity: 0.5,
+                                                    '&:hover': { opacity: 1, bgcolor: 'error.light', color: 'white' },
+                                                    p: 0.25,
+                                                }}
+                                            >
+                                                <Close sx={{ fontSize: 14 }} />
+                                            </IconButton>
+                                        </Tooltip>
                                     </ListItem>
-                                    {i < notifications.length - 1 && <Divider component="li" />}
+                                    {i < visibleNotifications.length - 1 && <Divider component="li" />}
                                 </React.Fragment>
                             ))}
                         </List>

@@ -329,7 +329,7 @@ const EmployeeManagement = () => {
                         transition: 'all 0.2s',
                         bgcolor: categoryFilter === 'Full-Time' ? '#f0fdf4' : 'white',
                         '&:hover': { transform: 'translateY(-2px)', boxShadow: 4 }
-                    }} onClick={() => setCategoryFilter(categoryFilter === 'Full-Time' ? 'All' : 'Full-Time')}>
+                    }} onClick={() => setCategoryFilter('Full-Time')}>
                         <CardContent>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Box>
@@ -352,7 +352,7 @@ const EmployeeManagement = () => {
                         transition: 'all 0.2s',
                         bgcolor: categoryFilter === 'Part-Time' ? '#eff6ff' : 'white',
                         '&:hover': { transform: 'translateY(-2px)', boxShadow: 4 }
-                    }} onClick={() => setCategoryFilter(categoryFilter === 'Part-Time' ? 'All' : 'Part-Time')}>
+                    }} onClick={() => setCategoryFilter('Part-Time')}>
                         <CardContent>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Box>
@@ -375,7 +375,7 @@ const EmployeeManagement = () => {
                         transition: 'all 0.2s',
                         bgcolor: categoryFilter === 'Internship' ? '#fff7ed' : 'white',
                         '&:hover': { transform: 'translateY(-2px)', boxShadow: 4 }
-                    }} onClick={() => setCategoryFilter(categoryFilter === 'Internship' ? 'All' : 'Internship')}>
+                    }} onClick={() => setCategoryFilter('Internship')}>
                         <CardContent>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Box>
