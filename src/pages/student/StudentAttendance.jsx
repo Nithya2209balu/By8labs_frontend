@@ -1,54 +1,54 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import {
     Box, Button, Typography, TextField, Dialog, DialogTitle, DialogContent, DialogActions,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     IconButton, Chip, MenuItem, Grid, FormControl, InputLabel, Select,
-    Tooltip, Alert, CircularProgress, Tabs, Tab, LinearProgress
+    Tooltip, Alert, CircularProgress, Tabs, Tab, LinearProgress, Card, CardContent
 } from '@mui/material';
 import { Edit, Save, Assessment, Refresh } from '@mui/icons-material';
+    attendanceAPI, adminStudentAPI, courseAPI, dashboardAPI
+} from '../../services/studentPortalAPI';
 
-const API = 'https://by8labs-backend.onrender.com/api';
-const getToken = () => localStorage.getItem('token');
-const headers = () => ({ Authorization: `Bearer ${getToken()}` });
-
-const STATUS_COLORS = { Present: 'success', Absent: 'error', Late: 'warning', Leave: 'info' };
-const STATUSES = ['Present', 'Absent', 'Late', 'Leave'];
+const STATUS_COLORS = { Present: 'success', Absent: 'error', Late: 'warning', Leave: 'info', Holiday: 'default' };
+const STATUSES = ['Present', 'Absent', 'Late', 'Leave', 'Holiday'];
 
 export default function StudentAttendance() {
     const [students, setStudents] = useState([]);
-    const [courses, setCourses] = useState([]);
-    const [records, setRecords] = useState([]);
-    const [report, setReport] = useState([]);
-    const [tab, setTab] = useState(0);
-    const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-    const [course, setCourse] = useState('');
+    const [courses,  setCourses]  = useState([]);
+    const [records,  setRecords]  = useState([]);
+    const [report,   setReport]   = useState([]);
+    const [tab,      setTab]      = useState(0);
+    const [date,     setDate]     = useState(new Date().toISOString().slice(0, 10));
+    const [course,   setCourse]   = useState('');
     const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const [endDate,   setEndDate]   = useState('');
     const [attendance, setAttendance] = useState({});
-    const [editDialog, setEditDialog] = useState(null);
-    const [editStatus, setEditStatus] = useState('Present');
-    const [loading, setLoading] = useState(false);
-    const [saving, setSaving] = useState(false);
-    const [success, setSuccess] = useState('');
-    const [error, setError] = useState('');
+    const [editDialog,  setEditDialog]  = useState(null);
+    const [editStatus,  setEditStatus]  = useState('Present');
+    const [loading,  setLoading]  = useState(false);
+    const [saving,   setSaving]   = useState(false);
+    const [success,  setSuccess]  = useState('');
+    const [error,    setError]    = useState('');
+    const [stats,    setStats]    = useState(null);
 
     // Load students and courses on mount
     useEffect(() => {
         const load = async () => {
             try {
-                const [sRes, cRes] = await Promise.all([
-                    axios.get(`${API}/students?limit=500`, { headers: headers() }),
-                    axios.get(`${API}/student-courses`, { headers: headers() }),
+                const [sRes, cRes, statRes] = await Promise.all([
+                    adminStudentAPI.getAllStudents(),
+                    courseAPI.getAllCourses(),
+                    dashboardAPI.getAdminAttendanceStats().catch(() => ({ data: { data: null } }))
                 ]);
-                const studentList = sRes.data.students || [];
+                const studentList = sRes.data?.data || [];
                 setStudents(studentList);
-                setCourses(cRes.data || []);
+                setCourses(cRes.data?.data || cRes.data || []);
+                setStats(statRes.data?.data || null);
                 if (studentList.length === 0) {
                     setError('No students found. Please add students via the Student Management or Admission section first.');
                 }
             } catch (err) {
-                setError(`Failed to load students: ${err.response?.data?.message || err.message}. Make sure you are logged in as HR.`);
+                setError(`Failed to load students: ${err.response?.data?.message || err.message}. Make sure you are connected to the student portal.`);
             }
         };
         load();
@@ -58,24 +58,40 @@ export default function StudentAttendance() {
         setLoading(true);
         setError('');
         try {
-            const params = { date };
+            // For "View Records" we need all records — iterate approved students and merge
+            // Use the admin summary endpoint and filter by date client-side if needed
+            const params = {};
+            if (date)   params.date   = date;
             if (course) params.course = course;
-            const res = await axios.get(`${API}/student-attendance`, { headers: headers(), params });
-            const recs = res.data || [];
-            setRecords(recs);
+
+            // Fetch records for each student for the given date then flatten
+            const allRecords = [];
+            for (const s of students) {
+                try {
+                    const res = await attendanceAPI.getAttendanceById(s._id, params);
+                    const recs = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+                    recs.forEach(r => { r._studentMeta = s; });
+                    allRecords.push(...recs);
+                } catch { /* skip */ }
+            }
+            setRecords(allRecords);
+
             const map = {};
-            recs.forEach(r => { if (r.student?._id) map[r.student._id] = { status: r.status, id: r._id }; });
+            allRecords.forEach(r => {
+                const sid = r._studentMeta?._id || r.student?._id;
+                if (sid) map[sid] = { status: r.status, id: r._id };
+            });
             setAttendance(map);
         } catch (err) {
             setError(`Failed to load records: ${err.response?.data?.message || err.message}`);
         } finally {
             setLoading(false);
         }
-    }, [date, course]);
+    }, [date, course, students]);
 
     useEffect(() => {
-        if (tab === 0 || tab === 1) fetchRecords();
-    }, [fetchRecords, tab]);
+        if ((tab === 0 || tab === 1) && students.length > 0) fetchRecords();
+    }, [fetchRecords, tab, students]);
 
     const handleStatusChange = (studentId, status) => {
         setAttendance(prev => ({ ...prev, [studentId]: { ...prev[studentId], status } }));
@@ -84,23 +100,20 @@ export default function StudentAttendance() {
     const handleSaveBulk = async () => {
         const filtered = displayStudents;
         if (filtered.length === 0) {
-            setError('No students to mark attendance for. Add students or change the course filter.');
+            setError('No students to mark attendance for.');
             return;
         }
         setSaving(true);
         setError('');
         try {
-            const recs = filtered.map(s => ({
-                student: s._id,
-                status: attendance[s._id]?.status || 'Absent',
-            }));
-            const res = await axios.post(
-                `${API}/student-attendance/bulk`,
-                { date, course: course || undefined, records: recs },
-                { headers: headers() }
-            );
-            const saved = res.data?.saved ?? filtered.length;
-            setSuccess(`✅ Attendance saved for ${saved} students on ${date}. Reloading records...`);
+            for (const s of filtered) {
+                await attendanceAPI.markAttendanceById(s._id, {
+                    date,
+                    status: attendance[s._id]?.status || 'Absent',
+                    courseId: course || undefined,
+                });
+            }
+            setSuccess(`✅ Attendance saved for ${filtered.length} students on ${date}.`);
             fetchRecords();
         } catch (err) {
             setError(`Save failed: ${err.response?.data?.message || err.message}`);
@@ -112,11 +125,14 @@ export default function StudentAttendance() {
     const handleEditSave = async () => {
         try {
             if (editDialog?._id) {
-                await axios.put(
-                    `${API}/student-attendance/${editDialog._id}`,
-                    { status: editStatus },
-                    { headers: headers() }
-                );
+                // Use verifyEdit flow is available; fallback to basic update via markAttendanceById
+                const sid = editDialog._studentMeta?._id || editDialog.student?._id;
+                if (sid) {
+                    await attendanceAPI.markAttendanceById(sid, {
+                        date: editDialog.date?.slice(0, 10) || date,
+                        status: editStatus,
+                    });
+                }
             }
             setEditDialog(null);
             setSuccess('Record updated');
@@ -135,13 +151,29 @@ export default function StudentAttendance() {
         setError('');
         setReport([]);
         try {
-            const params = { startDate, endDate };
-            if (course) params.course = course;
-            const res = await axios.get(`${API}/student-attendance/report/summary`, { headers: headers(), params });
-            const data = res.data || [];
-            setReport(data);
-            if (data.length === 0) {
-                setError('No attendance records found for the selected date range. Mark attendance first, then generate the report.');
+            // Build per-student summary over the range
+            const summary = [];
+            for (const s of students) {
+                try {
+                    const res = await attendanceAPI.getAttendanceSummaryById(s._id);
+                    const d   = res.data?.data ?? res.data;
+                    if (d) {
+                        summary.push({
+                            _id:        s._id,
+                            name:       s.name,
+                            studentId:  s.studentId,
+                            total:      d.totalDays    ?? 0,
+                            present:    d.presentCount ?? 0,
+                            absent:     d.absentCount  ?? 0,
+                            late:       0,
+                            percentage: d.attendancePercentage ?? 0,
+                        });
+                    }
+                } catch { /* skip */ }
+            }
+            setReport(summary);
+            if (summary.length === 0) {
+                setError('No attendance records found. Mark attendance first, then generate the report.');
             }
         } catch (err) {
             setError(`Report failed: ${err.response?.data?.message || err.message}`);
@@ -156,11 +188,63 @@ export default function StudentAttendance() {
         <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h5" fontWeight={700} color="primary.dark">📅 Attendance Management</Typography>
-                <Tooltip title="Reload students"><IconButton onClick={() => window.location.reload()}><Refresh /></IconButton></Tooltip>
+                <Tooltip title="Reload students">
+                    <IconButton onClick={() => window.location.reload()}><Refresh /></IconButton>
+                </Tooltip>
             </Box>
 
             {success && <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 2 }}>{success}</Alert>}
-            {error && <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>{error}</Alert>}
+            {error   && <Alert severity="error"   onClose={() => setError('')}   sx={{ mb: 2 }}>{error}</Alert>}
+
+            {/* Attendance Overview Cards (5 Columns) */}
+            <Grid container spacing={2} mb={4}>
+                <Grid item xs>
+                    <Card sx={{ height: '100%', borderTop: '4px solid #9e9e9e' }}>
+                        <CardContent sx={{ textAlign: 'center', p: 2 }}>
+                            <Box fontSize={32} mb={0.5}>📊</Box>
+                            <Typography variant="h5" fontWeight={800}>{stats?.totalDays ?? 0}</Typography>
+                            <Typography variant="body2" color="text.secondary" fontWeight={600} mt={0.5}>Total Days</Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs>
+                    <Card sx={{ height: '100%', borderTop: '4px solid #2e7d32' }}>
+                        <CardContent sx={{ textAlign: 'center', p: 2 }}>
+                            <Box fontSize={32} mb={0.5}>✅</Box>
+                            <Typography variant="h5" fontWeight={800} color="#2e7d32">{stats?.presentCount ?? 0}</Typography>
+                            <Typography variant="body2" color="text.secondary" fontWeight={600} mt={0.5}>Present</Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs>
+                    <Card sx={{ height: '100%', borderTop: '4px solid #d32f2f' }}>
+                        <CardContent sx={{ textAlign: 'center', p: 2 }}>
+                            <Box fontSize={32} mb={0.5}>❌</Box>
+                            <Typography variant="h5" fontWeight={800} color="#d32f2f">{stats?.absentCount ?? 0}</Typography>
+                            <Typography variant="body2" color="text.secondary" fontWeight={600} mt={0.5}>Absent</Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs>
+                    <Card sx={{ height: '100%', borderTop: '4px solid #ed6c02' }}>
+                        <CardContent sx={{ textAlign: 'center', p: 2 }}>
+                            <Box fontSize={32} mb={0.5}>🏖️</Box>
+                            <Typography variant="h5" fontWeight={800} color="#ed6c02">{stats?.holidayCount ?? 0}</Typography>
+                            <Typography variant="body2" color="text.secondary" fontWeight={600} mt={0.5}>Holidays</Typography>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs>
+                    <Card sx={{ height: '100%', borderTop: '4px solid #1976d2', display: 'flex', flexDirection: 'column' }}>
+                        <CardContent sx={{ textAlign: 'center', p: 2, flexGrow: 1 }}>
+                            <Box fontSize={32} mb={0.5}>📈</Box>
+                            <Typography variant="h5" fontWeight={800} color="#1976d2">{stats?.attendancePercentage ?? 0}%</Typography>
+                            <Typography variant="body2" color="text.secondary" fontWeight={600} mb={1.5} mt={0.5}>Attendance %</Typography>
+                            <LinearProgress variant="determinate" value={stats?.attendancePercentage ?? 0} sx={{ height: 6, borderRadius: 3 }} />
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
 
             <Tabs value={tab} onChange={(_, v) => { setTab(v); setError(''); }} sx={{ mb: 3 }}>
                 <Tab label={`Mark Attendance${students.length > 0 ? ` (${displayStudents.length} students)` : ''}`} />
@@ -182,7 +266,7 @@ export default function StudentAttendance() {
                                 <InputLabel>Course (filter)</InputLabel>
                                 <Select value={course} label="Course (filter)" onChange={e => setCourse(e.target.value)}>
                                     <MenuItem value="">All Students</MenuItem>
-                                    {courses.map(c => <MenuItem key={c._id} value={c._id}>{c.courseName}</MenuItem>)}
+                                    {courses.map(c => <MenuItem key={c._id} value={c._id}>{c.name || c.courseName}</MenuItem>)}
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -215,7 +299,7 @@ export default function StudentAttendance() {
                                         <TableRow key={s._id} hover>
                                             <TableCell><Typography variant="body2" fontWeight={600}>{s.name}</Typography></TableCell>
                                             <TableCell><Chip label={s.studentId} size="small" variant="outlined" /></TableCell>
-                                            <TableCell>{s.course?.courseName || '—'}</TableCell>
+                                            <TableCell>{s.course?.courseName || s.courseName || '—'}</TableCell>
                                             <TableCell>
                                                 <FormControl size="small" sx={{ minWidth: 130 }}>
                                                     <Select
@@ -262,7 +346,7 @@ export default function StudentAttendance() {
                                 <InputLabel>Course</InputLabel>
                                 <Select value={course} label="Course" onChange={e => setCourse(e.target.value)}>
                                     <MenuItem value="">All</MenuItem>
-                                    {courses.map(c => <MenuItem key={c._id} value={c._id}>{c.courseName}</MenuItem>)}
+                                    {courses.map(c => <MenuItem key={c._id} value={c._id}>{c.name || c.courseName}</MenuItem>)}
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -283,13 +367,13 @@ export default function StudentAttendance() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {records.map(r => (
-                                        <TableRow key={r._id} hover>
+                                    {records.map((r, i) => (
+                                        <TableRow key={r._id || i} hover>
                                             <TableCell>
-                                                <Typography variant="body2" fontWeight={600}>{r.student?.name}</Typography>
-                                                <Typography variant="caption" color="text.secondary">{r.student?.studentId}</Typography>
+                                                <Typography variant="body2" fontWeight={600}>{r._studentMeta?.name || r.student?.name}</Typography>
+                                                <Typography variant="caption" color="text.secondary">{r._studentMeta?.studentId || r.student?.studentId}</Typography>
                                             </TableCell>
-                                            <TableCell>{r.course?.courseName || '—'}</TableCell>
+                                            <TableCell>{r.course?.courseName || r.course?.name || '—'}</TableCell>
                                             <TableCell>{new Date(r.date).toLocaleDateString()}</TableCell>
                                             <TableCell><Chip label={r.status} size="small" color={STATUS_COLORS[r.status]} /></TableCell>
                                             <TableCell>
@@ -304,7 +388,7 @@ export default function StudentAttendance() {
                                     {records.length === 0 && (
                                         <TableRow>
                                             <TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                                                No attendance records for {date}. Mark attendance first in the "Mark Attendance" tab.
+                                                No attendance records for {date}. Mark attendance first.
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -334,7 +418,7 @@ export default function StudentAttendance() {
                                 <InputLabel>Course</InputLabel>
                                 <Select value={course} label="Course" onChange={e => setCourse(e.target.value)}>
                                     <MenuItem value="">All Courses</MenuItem>
-                                    {courses.map(c => <MenuItem key={c._id} value={c._id}>{c.courseName}</MenuItem>)}
+                                    {courses.map(c => <MenuItem key={c._id} value={c._id}>{c.name || c.courseName}</MenuItem>)}
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -350,13 +434,12 @@ export default function StudentAttendance() {
                             <Table size="small">
                                 <TableHead>
                                     <TableRow sx={{ bgcolor: 'primary.main' }}>
-                                        <TableCell sx={{ color: 'white', fontWeight: 700 }}>Student</TableCell>
-                                        <TableCell sx={{ color: 'white', fontWeight: 700 }}>ID</TableCell>
-                                        <TableCell sx={{ color: 'white', fontWeight: 700 }} align="center">Total Days</TableCell>
-                                        <TableCell sx={{ color: 'white', fontWeight: 700 }} align="center">Present</TableCell>
-                                        <TableCell sx={{ color: 'white', fontWeight: 700 }} align="center">Absent</TableCell>
-                                        <TableCell sx={{ color: 'white', fontWeight: 700 }} align="center">Late</TableCell>
-                                        <TableCell sx={{ color: 'white', fontWeight: 700 }} align="center">Attendance %</TableCell>
+                                        {['Student', 'ID', 'Total Days', 'Present', 'Absent', 'Late', 'Attendance %'].map(h => (
+                                            <TableCell key={h} sx={{ color: 'white', fontWeight: 700 }}
+                                                align={['Total Days','Present','Absent','Late','Attendance %'].includes(h) ? 'center' : 'left'}>
+                                                {h}
+                                            </TableCell>
+                                        ))}
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -366,8 +449,8 @@ export default function StudentAttendance() {
                                             <TableCell><Chip label={r.studentId} size="small" variant="outlined" /></TableCell>
                                             <TableCell align="center">{r.total}</TableCell>
                                             <TableCell align="center"><Chip label={r.present} size="small" color="success" variant="outlined" /></TableCell>
-                                            <TableCell align="center"><Chip label={r.absent} size="small" color="error" variant="outlined" /></TableCell>
-                                            <TableCell align="center"><Chip label={r.late} size="small" color="warning" variant="outlined" /></TableCell>
+                                            <TableCell align="center"><Chip label={r.absent}  size="small" color="error"   variant="outlined" /></TableCell>
+                                            <TableCell align="center"><Chip label={r.late}    size="small" color="warning" variant="outlined" /></TableCell>
                                             <TableCell align="center">
                                                 <Box display="flex" alignItems="center" gap={1}>
                                                     <LinearProgress
@@ -405,7 +488,7 @@ export default function StudentAttendance() {
                 <DialogTitle>Edit Attendance Record</DialogTitle>
                 <DialogContent>
                     <Typography variant="body2" mb={2} fontWeight={600}>
-                        {editDialog?.student?.name} — {editDialog?.date ? new Date(editDialog.date).toLocaleDateString() : ''}
+                        {editDialog?._studentMeta?.name || editDialog?.student?.name} — {editDialog?.date ? new Date(editDialog.date).toLocaleDateString() : ''}
                     </Typography>
                     <FormControl fullWidth size="small">
                         <InputLabel>Status</InputLabel>

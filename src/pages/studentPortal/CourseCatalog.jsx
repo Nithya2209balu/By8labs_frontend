@@ -4,7 +4,7 @@ import {
     Chip, Button, CircularProgress, Alert, Tabs, Tab, Dialog,
     DialogTitle, DialogContent, DialogActions, DialogContentText
 } from '@mui/material';
-import { MenuBook, AccessTime, Star, CheckCircle } from '@mui/icons-material';
+import { MenuBook, AccessTime, Star, CheckCircle, Refresh } from '@mui/icons-material';
 import { courseAPI } from '../../services/studentPortalAPI';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,22 +25,47 @@ const CourseCatalog = () => {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const [coursesRes, categoriesRes] = await Promise.all([
+                const [coursesRes, categoriesRes] = await Promise.allSettled([
                     courseAPI.getAllCourses(),
                     courseAPI.getCategories()
                 ]);
 
-                if (coursesRes.data.success) {
-                    setCourses(coursesRes.data.data || []);
+                if (coursesRes.status === 'fulfilled' && coursesRes.value?.data?.success) {
+                    setCourses(coursesRes.value.data.data || []);
+                } else if (coursesRes.status === 'fulfilled') {
+                    const data = coursesRes.value?.data;
+                    if (Array.isArray(data)) setCourses(data);
+                    else if (Array.isArray(data?.data)) setCourses(data.data);
+                    else if (Array.isArray(data?.courses)) setCourses(data.courses);
+                    else if (typeof data === 'object') {
+                        setCourses(Object.values(data).find(Array.isArray) || []);
+                    }
+                } else if (coursesRes.status === 'rejected') {
+                    console.error('Failed to fetch courses:', coursesRes.reason);
+                    setError('Failed to load courses. Please try again later.');
                 }
                 
-                // Assuming categories API might return an array or { success: true, data: [...] }
-                const catData = categoriesRes.data.data || categoriesRes.data || [];
-                setCategories(['All', ...catData.map(c => c.name || c)]);
+                let catData = [];
+                if (categoriesRes.status === 'fulfilled') {
+                    const data = categoriesRes.value?.data;
+                    if (Array.isArray(data)) catData = data;
+                    else if (Array.isArray(data?.data)) catData = data.data;
+                    else if (Array.isArray(data?.categories)) catData = data.categories;
+                    else if (typeof data === 'object') {
+                        // find the first array value in the object
+                        catData = Object.values(data).find(Array.isArray) || [];
+                    }
+                } else {
+                    console.error('Failed to fetch categories:', categoriesRes.reason);
+                }
+
+                setCategories(['All', ...catData.map(c => 
+                    (typeof c === 'string' ? c : c?.name || c?.categoryName || c?.title || 'Unknown')
+                ).filter(Boolean)]);
                 
             } catch (err) {
                 console.error('Failed to fetch catalog:', err);
-                setError('Failed to load courses. Please try again later.');
+                setError('An unexpected error occurred. Please try again later.');
             } finally {
                 setLoading(false);
             }
@@ -48,6 +73,50 @@ const CourseCatalog = () => {
 
         fetchData();
     }, []);
+
+    const handleRefresh = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const [coursesRes, categoriesRes] = await Promise.allSettled([
+                courseAPI.getAllCourses(),
+                courseAPI.getCategories()
+            ]);
+
+            if (coursesRes.status === 'fulfilled' && coursesRes.value?.data?.success) {
+                setCourses(coursesRes.value.data.data || []);
+            } else if (coursesRes.status === 'fulfilled') {
+                const data = coursesRes.value?.data;
+                if (Array.isArray(data)) setCourses(data);
+                else if (Array.isArray(data?.data)) setCourses(data.data);
+                else if (Array.isArray(data?.courses)) setCourses(data.courses);
+                else if (typeof data === 'object') {
+                    setCourses(Object.values(data).find(Array.isArray) || []);
+                }
+            } else {
+                setError('Failed to refresh courses.');
+            }
+
+            let catData = [];
+            if (categoriesRes.status === 'fulfilled') {
+                const data = categoriesRes.value?.data;
+                if (Array.isArray(data)) catData = data;
+                else if (Array.isArray(data?.data)) catData = data.data;
+                else if (Array.isArray(data?.categories)) catData = data.categories;
+                else if (typeof data === 'object') {
+                    catData = Object.values(data).find(Array.isArray) || [];
+                }
+                setCategories(['All', ...catData.map(c => 
+                    (typeof c === 'string' ? c : c?.name || c?.categoryName || c?.title || 'Unknown')
+                ).filter(Boolean)]);
+            }
+
+        } catch (err) {
+            setError('Refresh failed.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const filteredCourses = selectedCategory === 'All' 
         ? courses 
@@ -87,13 +156,23 @@ const CourseCatalog = () => {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Box mb={4}>
-                <Typography variant="h4" fontWeight="bold" gutterBottom>
-                    Course Catalog
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                    Browse and enroll in available courses to upgrade your skills.
-                </Typography>
+            <Box mb={4} display="flex" justifyContent="space-between" alignItems="flex-start">
+                <Box>
+                    <Typography variant="h4" fontWeight="bold" gutterBottom>
+                        Course Catalog
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary">
+                        Browse and enroll in available courses to upgrade your skills.
+                    </Typography>
+                </Box>
+                <Button 
+                    variant="outlined" 
+                    startIcon={<Refresh />} 
+                    onClick={handleRefresh}
+                    disabled={loading}
+                >
+                    Refresh
+                </Button>
             </Box>
 
             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}

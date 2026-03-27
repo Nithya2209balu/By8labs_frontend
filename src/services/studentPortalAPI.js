@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const STUDENT_API_URL = 'https://student-portal-znxr.onrender.com/api';
+export const STUDENT_API_URL = 'https://student-portal-znxr.onrender.com/api';
 
 // Separate token key so it doesn't collide with the HR backend token
 const TOKEN_KEY = 'student_portal_token';
@@ -27,7 +27,15 @@ studentApi.interceptors.request.use(
 
 studentApi.interceptors.response.use(
     (response) => response,
-    (error) => Promise.reject(error)
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            // Token is invalid or expired
+            clearStudentPortalToken();
+            // Dispatch a custom event to tell the UI to show the connection gate again
+            window.dispatchEvent(new Event('student_portal_unauthorized'));
+        }
+        return Promise.reject(error);
+    }
 );
 
 // Auth
@@ -38,6 +46,9 @@ export const portalAuthAPI = {
 // 1) Dashboard
 export const dashboardAPI = {
     getCounts: () => studentApi.get('/dashboard/counts'),
+    getStudentStats: () => studentApi.get('/dashboard/admin/stats'),
+    getAdminAttendanceStats: () => studentApi.get('/dashboard/admin/attendance'),
+    getOverallAdminStats: () => studentApi.get('/dashboard/admin/overall'),
 };
 
 // 2) Admin
@@ -49,8 +60,11 @@ export const adminStudentAPI = {
 
 // 3) Courses
 export const courseAPI = {
-    getCategories: () => studentApi.get('/courses/categories'),
-    getAllCourses: () => studentApi.get('/courses'),
+    getCategoryNames: () => studentApi.get('/courses/categories/names'),
+    getCategories: () => studentApi.get('/courses/categories/list'),
+    addCategory: (data) => studentApi.post('/courses/categories/list', data),
+    getAllCourses: () => studentApi.get('/courses/categories/list'),
+    addCourse: (data) => studentApi.post('/courses', data),
     getCourseAbout: (id) => studentApi.get(`/courses/${id}/about`),
     enrollCourse: (id) => studentApi.post(`/courses/${id}/enroll`),
     getCourseLessons: (id) => studentApi.get(`/courses/${id}/lessons`),
@@ -71,7 +85,15 @@ export const courseAPI = {
 // 4) Attendance
 export const attendanceAPI = {
     getSummary: () => studentApi.get('/attendance/summary'),
+    getOverallSummary: () => studentApi.get('/attendance/summary'),
     getMyAttendance: () => studentApi.get('/attendance'),
+    // Student-ID based APIs
+    markAttendanceById: (userId, data) => studentApi.post(`/attendance/${userId}`, data),
+    getAttendanceById: (userId, params) => studentApi.get(`/attendance/${userId}`, { params }),
+    getAttendanceSummaryById: (userId) => studentApi.get(`/attendance/summary/${userId}`),
+    // OTP edit flow
+    requestEdit: (userId, data) => studentApi.post(`/attendance/${userId}/request-edit`, data),
+    verifyEdit: (userId, data) => studentApi.put(`/attendance/${userId}/verify-edit`, data),
 };
 
 // 5) Leaderboard
@@ -87,6 +109,17 @@ export const notificationAPI = {
 // 7) Enrollments
 export const enrollmentAPI = {
     getMyCourses: () => studentApi.get('/enrollments/my-courses'),
+};
+
+// 8) Leave
+export const leaveAPI = {
+    getAllLeaves: (params) => studentApi.get('/leave', { params }),
+    updateLeaveStatus: (leaveId, data) => studentApi.put(`/leave/${leaveId}/status`, data),
+};
+
+// 9) Tasks
+export const taskAPI = {
+    getAdminDashboard: () => studentApi.get('/tasks/admin/dashboard'),
 };
 
 export default studentApi;
