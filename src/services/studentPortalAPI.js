@@ -122,4 +122,16 @@ export const taskAPI = {
     getAdminDashboard: () => studentApi.get('/tasks/admin/dashboard'),
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Payment API
+// ═══════════════════════════════════════════════════════════════════════════
+export const paymentAPI = {
+    add: (data) => studentApi.post('/payments/admin/add', data),
+    getReport: (params) => studentApi.get('/payments/admin/report', { params }),
+    getList: (params) => studentApi.get('/payments/admin/list', { params }),
+    downloadReport: (params) => studentApi.get('/payments/admin/report/download', { params, responseType: 'blob' }),
+    getStudentCourse: (userId) => studentApi.get(`/payments/admin/student-course/${userId}`),
+};
+
 export default studentApi;
+
