@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://by8labs-backend.onrender.com/api';
+const API_URL = '/api';
 
 // Create axios instance
 const api = axios.create({

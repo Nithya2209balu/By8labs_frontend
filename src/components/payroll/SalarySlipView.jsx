@@ -111,7 +111,7 @@ const SalarySlipView = ({ payroll }) => {
             setDownloading(true);
             const token = localStorage.getItem('token');
 
-            const response = await fetch(`https://by8labs-backend.onrender.com/api/payroll/slip/${payroll._id}/pdf?withTax=${withTax}`, {
+            const response = await fetch(`/api/payroll/slip/${payroll._id}/pdf?withTax=${withTax}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 

@@ -19,14 +19,21 @@ const ProtectedRoute = ({ children, requiredRole }) => {
         return <Navigate to="/login" replace />;
     }
 
-    if (requiredRole && user?.role !== requiredRole && user?.role !== 'HR') {
+    // Handle Pending Approval Status
+    if (user?.approvalStatus === 'Pending' && user?.role !== 'HR') {
+        if (location.pathname !== '/pending-approval') {
+            return <Navigate to="/pending-approval" replace />;
+        }
+        return children;
+    }
+
+    // Redirect away from pending-approval if already approved
+    if (user?.approvalStatus === 'Approved' && location.pathname === '/pending-approval') {
         return <Navigate to="/dashboard" replace />;
     }
 
-    // Strict Access Control for New Users
-    // If user doesn't have data access (and is not HR), they can ONLY access Dashboard
-    // We allow /profile as an exception if needed, but for now strict Dashboard only as requested
-    if (!user?.hasDataAccess && user?.role !== 'HR' && location.pathname !== '/dashboard') {
+    // Strict Access Control for New Users (Approved but no data access yet)
+    if (!user?.hasDataAccess && user?.role !== 'HR' && location.pathname !== '/dashboard' && location.pathname !== '/profile') {
         return <Navigate to="/dashboard" replace />;
     }
 

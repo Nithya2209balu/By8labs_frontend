@@ -53,14 +53,14 @@ const VerifyOTP = () => {
             setLoading(true);
             setError('');
             const response = await authAPI.verifyOTP({ userId, otp });
-            setSuccess(response.data.message);
+            setSuccess('Email verified! Your account is now pending HR approval. You will be notified once an administrator approves your registration.');
 
-            // Redirect to login after 2 seconds
+            // Redirect to login after 3 seconds
             setTimeout(() => {
                 navigate('/login', {
-                    state: { message: 'Email verified! You can now login.' }
+                    state: { message: 'Verification successful! Your account is pending HR approval.' }
                 });
-            }, 2000);
+            }, 3000);
         } catch (error) {
             setError(error.response?.data?.message || 'Verification failed');
         } finally {

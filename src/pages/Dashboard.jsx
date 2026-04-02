@@ -79,7 +79,7 @@ const Dashboard = () => {
     const fetchStats = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://by8labs-backend.onrender.com/api/dashboard/stats', {
+            const response = await axios.get('/api/dashboard/stats', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setStats(response.data);
@@ -155,7 +155,7 @@ const Dashboard = () => {
             setRequestLoading(true);
             const token = localStorage.getItem('token');
             await axios.post(
-                'https://by8labs-backend.onrender.com/api/access-requests',
+                '/api/access-requests',
                 { message: 'Requesting access to view my data (attendance, leaves, payroll)' },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -176,7 +176,7 @@ const Dashboard = () => {
     const fetchEmployeeStats = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://by8labs-backend.onrender.com/api/attendance/my-stats', {
+            const response = await axios.get('/api/attendance/my-stats', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setEmployeeStats(response.data);
@@ -234,7 +234,7 @@ const Dashboard = () => {
     const fetchAccessRequests = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get('https://by8labs-backend.onrender.com/api/access-requests', {
+            const response = await axios.get('/api/access-requests', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAccessRequests(response.data);
@@ -248,7 +248,7 @@ const Dashboard = () => {
             setRequestActionLoading(requestId);
             const token = localStorage.getItem('token');
             await axios.put(
-                `https://by8labs-backend.onrender.com/api/access-requests/${requestId}/approve`,
+                `/api/access-requests/${requestId}/approve`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -268,7 +268,7 @@ const Dashboard = () => {
             setRequestActionLoading(requestId);
             const token = localStorage.getItem('token');
             await axios.put(
-                `https://by8labs-backend.onrender.com/api/access-requests/${requestId}/reject`,
+                `/api/access-requests/${requestId}/reject`,
                 { reason: 'HR rejected request' },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

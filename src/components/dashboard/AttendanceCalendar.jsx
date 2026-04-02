@@ -66,7 +66,7 @@ const AttendanceCalendar = ({ refreshTrigger }) => {
             try {
                 const token = localStorage.getItem('token');
                 const holidaysRes = await axios.get(
-                    `https://by8labs-backend.onrender.com/api/holidays/${year}/${month + 1}`,
+                    `/api/holidays/${year}/${month + 1}`,
                     {
                         headers: { Authorization: `Bearer ${token}` }
                     }

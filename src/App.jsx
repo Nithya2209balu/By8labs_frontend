@@ -14,6 +14,7 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import VerifyOTP from './components/auth/VerifyOTP';
+import PendingApproval from './components/auth/PendingApproval';
 import Dashboard from './pages/Dashboard';
 import EmployeeManagement from './pages/EmployeeManagement';
 import EmployeeDetails from './components/employees/EmployeeDetails';
@@ -477,17 +478,37 @@ const AppLayout = ({ children }) => {
 };
 
 function AppRoutes() {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
 
     return (
         <Routes>
             <Route
                 path="/login"
-                element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
+                element={
+                    isAuthenticated 
+                        ? (user?.approvalStatus === 'Pending' && user?.role !== 'HR' 
+                            ? <Navigate to="/pending-approval" replace /> 
+                            : <Navigate to="/dashboard" replace />)
+                        : <Login />
+                }
             />
             <Route
                 path="/register"
-                element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />}
+                element={
+                    isAuthenticated 
+                        ? (user?.approvalStatus === 'Pending' && user?.role !== 'HR' 
+                            ? <Navigate to="/pending-approval" replace /> 
+                            : <Navigate to="/dashboard" replace />)
+                        : <Register />
+                }
+            />
+            <Route
+                path="/pending-approval"
+                element={
+                    <ProtectedRoute>
+                        <PendingApproval />
+                    </ProtectedRoute>
+                }
             />
             <Route
                 path="/verify-email"

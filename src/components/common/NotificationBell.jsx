@@ -16,7 +16,7 @@ import {
 import { Notifications, NotificationsNone, Campaign, Feedback, Close } from '@mui/icons-material';
 import axios from 'axios';
 
-const API = 'https://by8labs-backend.onrender.com/api';
+const API = '/api';
 const STORAGE_KEY = 'notif_last_seen';
 const DISMISSED_KEY = 'notif_dismissed';
 

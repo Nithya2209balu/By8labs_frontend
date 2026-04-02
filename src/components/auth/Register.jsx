@@ -41,6 +41,14 @@ const Register = () => {
             return;
         }
 
+        // Email domain validation (Hostinger only)
+        const allowedDomains = ['by8labs.com', 'hostinger.com'];
+        const emailDomain = formData.email.split('@')[1]?.toLowerCase();
+        if (!allowedDomains.includes(emailDomain)) {
+            setError('Only business email addresses (Hostinger) are allowed for registration. Gmail, Yahoo, etc. are not supported.');
+            return;
+        }
+
         setLoading(true);
 
         const result = await register({
@@ -125,6 +133,7 @@ const Register = () => {
                             onChange={handleChange}
                             margin="normal"
                             required
+                            helperText="Only Hostinger business emails (e.g., @by8labs.com) are allowed"
                         />
                         <TextField
                             fullWidth

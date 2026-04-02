@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (userData) => {
         try {
-            const response = await axios.post('https://by8labs-backend.onrender.com/api/auth/register', userData);
+            const response = await axios.post('/api/auth/register', userData);
 
             // Check if verification is required
             if (response.data.requiresVerification) {

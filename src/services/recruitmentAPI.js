@@ -1,7 +1,7 @@
 import axios from 'axios';
 import api from './api';
 
-const API_URL = 'https://by8labs-backend.onrender.com/api/recruitment';
+const API_URL = '/api/recruitment';
 
 // Job Posting APIs
 export const jobAPI = {

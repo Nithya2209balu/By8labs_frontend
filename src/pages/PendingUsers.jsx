@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { authAPI } from '../services/api';
 import {
     Container,
     Paper,
@@ -22,7 +22,7 @@ import {
     Button,
     TextField
 } from '@mui/material';
-import { CheckCircle, Cancel, Email, Person } from '@mui/icons-material';
+import { CheckCircle, Cancel, Email, Person, Refresh } from '@mui/icons-material';
 
 const PendingUsers = () => {
     const [pendingUsers, setPendingUsers] = useState([]);
@@ -39,10 +39,7 @@ const PendingUsers = () => {
 
     const fetchPendingUsers = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get('https://by8labs-backend.onrender.com/api/auth/pending-users', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await authAPI.getPendingUsers();
             setPendingUsers(response.data);
             setError('');
         } catch (err) {
@@ -54,12 +51,7 @@ const PendingUsers = () => {
 
     const handleApprove = async (userId) => {
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(
-                `https://by8labs-backend.onrender.com/api/auth/approve-user/${userId}`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await authAPI.approveUser(userId);
             setSuccess('User approved successfully!');
             fetchPendingUsers();
             setTimeout(() => setSuccess(''), 3000);
@@ -75,12 +67,7 @@ const PendingUsers = () => {
 
     const handleRejectConfirm = async () => {
         try {
-            const token = localStorage.getItem('token');
-            await axios.put(
-                `https://by8labs-backend.onrender.com/api/auth/reject-user/${selectedUser._id}`,
-                { reason: rejectionReason },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await authAPI.rejectUser(selectedUser._id, rejectionReason);
             setSuccess('User registration rejected');
             fetchPendingUsers();
             setRejectDialog(false);
@@ -94,7 +81,17 @@ const PendingUsers = () => {
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4">Pending User Registrations</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="h4">Pending User Registrations</Typography>
+                    <IconButton 
+                        onClick={fetchPendingUsers} 
+                        disabled={loading}
+                        color="primary"
+                        title="Refresh List"
+                    >
+                        <Refresh sx={{ animation: loading ? 'spin 2s linear infinite' : 'none' }} />
+                    </IconButton>
+                </Box>
                 <Chip label={`${pendingUsers.length} Pending`} color="warning" />
             </Box>
 

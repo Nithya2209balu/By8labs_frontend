@@ -10,7 +10,7 @@ import {
     EventNote, TrendingUp, Assignment, AccessTime, FiberManualRecord
 } from '@mui/icons-material';
 
-const API = 'https://by8labs-backend.onrender.com/api';
+const API = '/api';
 
 const getToken = () => localStorage.getItem('token');
 const headers = () => ({ Authorization: `Bearer ${getToken()}` });
