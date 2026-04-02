@@ -97,9 +97,6 @@ const Login = () => {
                     </form>
 
                     <Box sx={{ mt: 2, textAlign: 'center' }}>
-                        <Typography variant="body2" color="text.secondary">
-                            Demo Credentials: hr@test.com / password123
-                        </Typography>
                         <Typography variant="body2" sx={{ mt: 1 }}>
                             Don't have an account?{' '}
                             <Link to="/register" style={{ color: '#1976d2', textDecoration: 'underline', cursor: 'pointer' }}>
