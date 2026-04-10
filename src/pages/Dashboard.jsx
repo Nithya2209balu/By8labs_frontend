@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import {
@@ -39,6 +40,7 @@ import { attendanceAPI } from '../services/api';
 import StudentDashboard from './studentPortal/StudentDashboard';
 
 const Dashboard = () => {
+    const navigate = useNavigate();
     const { user, isHR } = useAuth();
     const [stats, setStats] = useState(null);
     const [employeeStats, setEmployeeStats] = useState(null);
@@ -191,28 +193,32 @@ const Dashboard = () => {
             value: stats?.totalEmployees || 0,
             icon: <People />,
             color: '#1976d2',
-            visible: isHR
+            visible: isHR,
+            path: '/employees'
         },
         {
             title: 'Pending Leaves',
             value: stats?.pendingLeaves || 0,
             icon: <EventNote />,
             color: '#ed6c02',
-            visible: isHR
+            visible: isHR,
+            path: '/leaves'
         },
         {
             title: 'Monthly Payroll',
             value: stats?.monthlyPayroll ? `₹${stats.monthlyPayroll}` : '₹0',
             icon: <AttachMoney />,
             color: '#2e7d32',
-            visible: isHR
+            visible: isHR,
+            path: '/payroll'
         },
         {
             title: 'Attendance Rate',
             value: stats?.attendanceRate ? `${stats.attendanceRate}%` : '0%',
             icon: <TrendingUp />,
             color: '#9c27b0',
-            visible: true
+            visible: true,
+            path: '/attendance'
         }
     ];
 
@@ -557,7 +563,11 @@ const Dashboard = () => {
                             <Grid container spacing={3}>
                                 {visibleStats.map((stat, index) => (
                                     <Grid item xs={12} sm={6} md={4} key={index}>
-                                        <Card elevation={3}>
+                                        <Card 
+                                            elevation={3} 
+                                            onClick={() => navigate(stat.path)}
+                                            sx={{ cursor: 'pointer', transition: '0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 } }}
+                                        >
                                             <CardContent>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                                     <Avatar sx={{ bgcolor: stat.color, mr: 2 }}>
@@ -587,7 +597,11 @@ const Dashboard = () => {
                                     <Grid container spacing={3} sx={{ mb: 3 }}>
                                         {/* Present Days */}
                                         <Grid item xs={12} sm={6} md={3}>
-                                            <Card elevation={3}>
+                                            <Card 
+                                                elevation={3} 
+                                                onClick={() => navigate('/attendance')}
+                                                sx={{ cursor: 'pointer', transition: '0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 } }}
+                                            >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                                         <Avatar sx={{ bgcolor: '#2e7d32', mr: 2 }}>
@@ -608,7 +622,11 @@ const Dashboard = () => {
 
                                         {/* Absent Days */}
                                         <Grid item xs={12} sm={6} md={3}>
-                                            <Card elevation={3}>
+                                            <Card 
+                                                elevation={3} 
+                                                onClick={() => navigate('/attendance')}
+                                                sx={{ cursor: 'pointer', transition: '0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 } }}
+                                            >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                                         <Avatar sx={{ bgcolor: '#d32f2f', mr: 2 }}>
@@ -629,7 +647,11 @@ const Dashboard = () => {
 
                                         {/* Permission Days */}
                                         <Grid item xs={12} sm={6} md={3}>
-                                            <Card elevation={3}>
+                                            <Card 
+                                                elevation={3} 
+                                                onClick={() => navigate('/attendance')}
+                                                sx={{ cursor: 'pointer', transition: '0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 } }}
+                                            >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                                         <Avatar sx={{ bgcolor: '#ed6c02', mr: 2 }}>
@@ -650,7 +672,11 @@ const Dashboard = () => {
 
                                         {/* Total Annual Leave */}
                                         <Grid item xs={12} sm={6} md={3}>
-                                            <Card elevation={3}>
+                                            <Card 
+                                                elevation={3} 
+                                                onClick={() => navigate('/leaves')}
+                                                sx={{ cursor: 'pointer', transition: '0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 } }}
+                                            >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                                         <Avatar sx={{ bgcolor: '#9c27b0', mr: 2 }}>
@@ -671,7 +697,11 @@ const Dashboard = () => {
 
                                         {/* Leave Taken */}
                                         <Grid item xs={12} sm={6} md={3}>
-                                            <Card elevation={3}>
+                                            <Card 
+                                                elevation={3} 
+                                                onClick={() => navigate('/leaves')}
+                                                sx={{ cursor: 'pointer', transition: '0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 } }}
+                                            >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                                         <Avatar sx={{ bgcolor: '#ed6c02', mr: 2 }}>
@@ -692,7 +722,11 @@ const Dashboard = () => {
 
                                         {/* Remaining Leave */}
                                         <Grid item xs={12} sm={6} md={3}>
-                                            <Card elevation={3}>
+                                            <Card 
+                                                elevation={3} 
+                                                onClick={() => navigate('/leaves')}
+                                                sx={{ cursor: 'pointer', transition: '0.3s', '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 } }}
+                                            >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                                         <Avatar sx={{ bgcolor: '#1976d2', mr: 2 }}>

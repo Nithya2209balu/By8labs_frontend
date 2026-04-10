@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Container, Grid, Card, CardContent, Typography, Box, CircularProgress, Alert } from '@mui/material';
 import { MenuBook, NotificationsActive, CheckCircleOutline } from '@mui/icons-material';
 import { dashboardAPI } from '../../services/studentPortalAPI';
 import { useAuth } from '../../context/AuthContext';
 
 const StudentDashboard = () => {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -49,19 +51,22 @@ const StudentDashboard = () => {
             title: 'Enrolled Courses',
             value: stats?.enrolledCourses || 0,
             icon: <MenuBook fontSize="large" color="primary" />,
-            bgColor: 'rgba(99, 102, 241, 0.1)'
+            bgColor: 'rgba(99, 102, 241, 0.1)',
+            path: '/my-courses'
         },
         {
             title: 'Attendance (%)',
             value: `${stats?.attendance || 0}%`,
             icon: <CheckCircleOutline fontSize="large" color="success" />,
-            bgColor: 'rgba(34, 197, 94, 0.1)'
+            bgColor: 'rgba(34, 197, 94, 0.1)',
+            path: '/student-attendance'
         },
         {
             title: 'Notifications',
             value: stats?.notifications || 0,
             icon: <NotificationsActive fontSize="large" color="warning" />,
-            bgColor: 'rgba(245, 158, 11, 0.1)'
+            bgColor: 'rgba(245, 158, 11, 0.1)',
+            path: '/student-notifications'
         }
     ];
 
@@ -79,7 +84,21 @@ const StudentDashboard = () => {
             <Grid container spacing={4}>
                 {dashboardCards.map((card, index) => (
                     <Grid item xs={12} sm={4} key={index}>
-                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <Card 
+                            onClick={() => navigate(card.path)}
+                            sx={{ 
+                                height: '100%', 
+                                display: 'flex', 
+                                flexDirection: 'column',
+                                cursor: 'pointer',
+                                transition: '0.3s',
+                                '&:hover': {
+                                    transform: 'translateY(-8px)',
+                                    boxShadow: '0 12px 30px rgba(99, 102, 241, 0.2)',
+                                    borderColor: 'primary.main'
+                                }
+                            }}
+                        >
                             <CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 4 }}>
                                 <Box
                                     sx={{

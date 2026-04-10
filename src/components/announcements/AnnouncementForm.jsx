@@ -14,7 +14,11 @@ import {
     CardMedia,
     CardActions
 } from '@mui/material';
-import { Close, CloudUpload, Delete } from '@mui/icons-material';
+import { Close, CloudUpload, Delete, Image, VideoLibrary } from '@mui/icons-material';
+
+const BACKEND_URL = import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace('/api', '')
+    : 'http://localhost:5000';
 
 const AnnouncementForm = ({ open, onClose, onSubmit, announcement = null }) => {
     const [formData, setFormData] = useState({
@@ -153,13 +157,18 @@ const AnnouncementForm = ({ open, onClose, onSubmit, announcement = null }) => {
 
                     {/* Image Upload */}
                     <Box>
-                        <Typography variant="subtitle2" gutterBottom>
-                            Images
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                            <Image fontSize="small" color="primary" />
+                            <Typography variant="subtitle2">Images</Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>
+                                Max 10 images · Each up to <strong>5 MB</strong> · JPG, PNG, GIF, WEBP
+                            </Typography>
+                        </Box>
                         <Button
                             component="label"
                             variant="outlined"
                             startIcon={<CloudUpload />}
+                            size="small"
                         >
                             Upload Images
                             <input
@@ -184,7 +193,7 @@ const AnnouncementForm = ({ open, onClose, onSubmit, announcement = null }) => {
                                                 <CardMedia
                                                     component="img"
                                                     height="100"
-                                                    image={`https://by8labs-backend.onrender.com/${image}`}
+                                                    image={`${BACKEND_URL}/${image}`}
                                                     alt={`Existing ${index}`}
                                                 />
                                                 <CardActions>
@@ -238,13 +247,18 @@ const AnnouncementForm = ({ open, onClose, onSubmit, announcement = null }) => {
 
                     {/* Video Upload */}
                     <Box>
-                        <Typography variant="subtitle2" gutterBottom>
-                            Videos
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                            <VideoLibrary fontSize="small" color="secondary" />
+                            <Typography variant="subtitle2">Videos</Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>
+                                Max 5 videos · Each up to <strong>50 MB</strong> · MP4, MOV, AVI, WEBM
+                            </Typography>
+                        </Box>
                         <Button
                             component="label"
                             variant="outlined"
                             startIcon={<CloudUpload />}
+                            size="small"
                         >
                             Upload Videos
                             <input
@@ -267,7 +281,7 @@ const AnnouncementForm = ({ open, onClose, onSubmit, announcement = null }) => {
                                         <Grid item xs={12} sm={6} key={index}>
                                             <Card>
                                                 <video width="100%" height="150" controls>
-                                                    <source src={`https://by8labs-backend.onrender.com/${video}`} type="video/mp4" />
+                                                    <source src={`${BACKEND_URL}/${video}`} type="video/mp4" />
                                                 </video>
                                                 <CardActions>
                                                     <IconButton

@@ -14,14 +14,14 @@ import {
     Search, Assessment, NotificationsActive, LinkOff, Lock, Refresh,
     FilterList, Visibility, HowToReg, PersonSearch, History, DataUsage, EventNote,
     Assignment, AccessTime, Payments, AddCard, ListAlt, FileDownload, AccountBalanceWallet,
-    AttachMoney, Group, PendingActions
+    AttachMoney, Group, PendingActions, CloudUpload, VerifiedUser
 } from '@mui/icons-material';
 import StudentLeaveManagementPanel from './StudentLeaveManagementPanel';
 import {
     dashboardAPI, adminStudentAPI, courseAPI, attendanceAPI,
     leaderboardAPI, notificationAPI, enrollmentAPI, taskAPI,
     portalAuthAPI, getStudentPortalToken, setStudentPortalToken, clearStudentPortalToken,
-    STUDENT_API_URL, paymentAPI
+    STUDENT_API_URL, paymentAPI, documentAPI, certificateAPI
 } from '../../services/studentPortalAPI';
 
 // ─── Sub-module definitions ────────────────────────────────────────────────
@@ -30,6 +30,7 @@ const MODULES = [
     { id: 'students',       label: 'Users',                 icon: <PeopleOutlined /> },
     { id: 'studentList',    label: 'Student List',          icon: <HowToReg /> },
     { id: 'courses',        label: 'Courses',               icon: <MenuBook /> },
+    { id: 'documents',      label: 'Upload Course',         icon: <CloudUpload /> },
     { id: 'attendance',     label: 'Attendance',            icon: <EventAvailable /> },
     { id: 'leaderboard',    label: 'Leaderboard',           icon: <EmojiEvents /> },
     { id: 'notifications',  label: 'Notifications',         icon: <NotificationsActive /> },
@@ -37,6 +38,7 @@ const MODULES = [
     { id: 'leave',          label: 'Leave Management',      icon: <EventNote /> },
     { id: 'tasks',          label: 'Tasks',                 icon: <Assignment /> },
     { id: 'payment',        label: 'Payments',              icon: <Payments /> },
+    { id: 'certificates',   label: 'Certificates',          icon: <VerifiedUser /> },
 ];
 
 // ─── Stat card helper ──────────────────────────────────────────────────────
@@ -55,7 +57,7 @@ function StatCard({ label, value, icon, color }) {
 // ═══════════════════════════════════════════════════════════════════════════
 // Panel: Dashboard
 // ═══════════════════════════════════════════════════════════════════════════
-function DashboardPanel({ refreshTrigger }) {
+function DashboardPanel({ refreshTrigger, onTabChange }) {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -79,33 +81,33 @@ function DashboardPanel({ refreshTrigger }) {
             title: 'USERS & STUDENTS',
             color: '#1976d2',
             items: [
-                { label: 'Total Students', value: stats?.users?.totalStudents, icon: <PeopleOutlined />, color: '#1976d2' },
-                { label: 'Pending Approvals', value: stats?.users?.pendingApprovals, icon: <HowToReg />, color: '#ed6c02' },
+                { label: 'Total Students', value: stats?.users?.totalStudents, icon: <PeopleOutlined />, color: '#1976d2', tab: 'studentList' },
+                { label: 'Pending Approvals', value: stats?.users?.pendingApprovals, icon: <HowToReg />, color: '#ed6c02', tab: 'students' },
             ]
         },
         {
             title: 'ACADEMIC OVERVIEW',
             color: '#2e7d32',
             items: [
-                { label: 'Total Courses', value: stats?.courses?.total, icon: <MenuBook />, color: '#2e7d32' },
-                { label: 'Total Tasks', value: stats?.tasks?.total, icon: <Assignment />, color: '#2e7d32' },
+                { label: 'Total Courses', value: stats?.courses?.total, icon: <MenuBook />, color: '#2e7d32', tab: 'courses' },
+                { label: 'Total Tasks', value: stats?.tasks?.total, icon: <Assignment />, color: '#2e7d32', tab: 'tasks' },
             ]
         },
         {
             title: 'ATTENDANCE SUMMARY',
             color: '#0288d1',
             items: [
-                { label: 'Total Records', value: stats?.attendance?.totalRecords, icon: <EventAvailable />, color: '#0288d1' },
-                { label: 'Avg Attendance %', value: stats?.attendance?.averagePercentage ? `${stats.attendance.averagePercentage}%` : '0%', icon: <Assessment />, color: '#0288d1' },
+                { label: 'Total Records', value: stats?.attendance?.totalRecords, icon: <EventAvailable />, color: '#0288d1', tab: 'attendance' },
+                { label: 'Avg Attendance %', value: stats?.attendance?.averagePercentage ? `${stats.attendance.averagePercentage}%` : '0%', icon: <Assessment />, color: '#0288d1', tab: 'attendance' },
             ]
         },
         {
             title: 'LEAVE REQUESTS',
             color: '#7b1fa2',
             items: [
-                { label: 'Total Leaves', value: stats?.leave?.total, icon: <EventNote />, color: '#7b1fa2' },
-                { label: 'Pending', value: stats?.leave?.pending, icon: <History />, color: '#ed6c02' },
-                { label: 'Approved', value: stats?.leave?.approved, icon: <CheckCircle />, color: '#2e7d32' },
+                { label: 'Total Leaves', value: stats?.leave?.total, icon: <EventNote />, color: '#7b1fa2', tab: 'leave' },
+                { label: 'Pending', value: stats?.leave?.pending, icon: <History />, color: '#ed6c02', tab: 'leave' },
+                { label: 'Approved', value: stats?.leave?.approved, icon: <CheckCircle />, color: '#2e7d32', tab: 'leave' },
             ]
         }
     ];
@@ -128,14 +130,18 @@ function DashboardPanel({ refreshTrigger }) {
                     <Grid container spacing={3}>
                         {sec.items.map((item, i) => (
                             <Grid item xs={12} sm={6} md={idx === 3 ? 4 : 2.8} key={i}>
-                                <Card sx={{ 
-                                    borderRadius: 4, 
-                                    boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
-                                    border: '1px solid',
-                                    borderColor: 'rgba(0,0,0,0.05)',
-                                    transition: 'all 0.2s',
-                                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }
-                                }}>
+                                <Card 
+                                    onClick={() => item.tab && onTabChange(item.tab)}
+                                    sx={{ 
+                                        borderRadius: 4, 
+                                        boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                                        border: '1px solid',
+                                        borderColor: 'rgba(0,0,0,0.05)',
+                                        transition: 'all 0.2s',
+                                        cursor: item.tab ? 'pointer' : 'default',
+                                        '&:hover': item.tab ? { transform: 'translateY(-4px)', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', borderColor: item.color } : {}
+                                    }}
+                                >
                                     <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2.5, p: 2.5, '&:last-child': { pb: 2.5 } }}>
                                         <Box sx={{ 
                                             width: 54, height: 54, borderRadius: '50%',
@@ -1488,6 +1494,205 @@ function PortalConnect({ onConnect }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Panel: Course Documents
+// ═══════════════════════════════════════════════════════════════════════════
+function DocumentsPanel() {
+    const [courses, setCourses] = useState([]);
+    const [documents, setDocuments] = useState([]);
+    const [loadingCourses, setLoadingCourses] = useState(true);
+    const [loadingDocs, setLoadingDocs] = useState(true);
+    
+    // Upload form
+    const [courseId, setCourseId] = useState('');
+    const [file, setFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [msg, setMsg] = useState({ type: '', text: '' });
+
+    const fetchDocs = useCallback(async () => {
+        setLoadingDocs(true);
+        try {
+            const res = await documentAPI.getAllAdminDocuments();
+            setDocuments(res.data.data || []);
+        } catch (err) {
+            console.error('Failed to load documents:', err);
+        } finally {
+            setLoadingDocs(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        courseAPI.getAllCourses()
+            .then(res => setCourses(res.data?.data || res.data || []))
+            .catch(console.error)
+            .finally(() => setLoadingCourses(false));
+            
+        fetchDocs();
+    }, [fetchDocs]);
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setFile(e.target.files[0]);
+        }
+    };
+
+    const handleUpload = async (e) => {
+        e.preventDefault();
+        if (!courseId) return setMsg({ type: 'error', text: 'Please select a course.' });
+        if (!file) return setMsg({ type: 'error', text: 'Please choose a file to upload.' });
+        
+        setUploading(true);
+        setMsg({ type: '', text: '' });
+        
+        const selectedCourse = courses.find(c => (c.courseId || c._id) === courseId);
+        const courseName = selectedCourse ? (selectedCourse.name || selectedCourse.courseName) : 'Unknown Course';
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('courseId', courseId);
+        formData.append('courseName', courseName);
+        
+        const uStr = localStorage.getItem('user');
+        let uploadUserId = 'admin';
+        if (uStr) {
+           try { const u = JSON.parse(uStr); uploadUserId = u._id || 'admin'; } catch(e){}
+        }
+
+        // Add uploadUserId to formData in case backend expects it in the body instead
+        formData.append('userId', uploadUserId);
+
+        try {
+            await documentAPI.uploadDocument(formData);
+            setMsg({ type: 'success', text: 'Document uploaded successfully!' });
+            setFile(null);
+            setCourseId('');
+            const fileInput = document.getElementById('upload-course-doc-input');
+            if (fileInput) fileInput.value = '';
+            fetchDocs();
+        } catch (err) {
+            setMsg({ type: 'error', text: err.response?.data?.message || 'Failed to upload document' });
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const getFileUrl = (url) => {
+        if (!url) return '#';
+        if (url.startsWith('http')) return url;
+        const base = STUDENT_API_URL.replace('/api', '');
+        return `${base}/${url.startsWith('/') ? url.slice(1) : url}`;
+    };
+
+    return (
+        <Box>
+            <Typography variant="h6" fontWeight={800} color="primary.main" mb={3} display="flex" alignItems="center" gap={1}>
+                <CloudUpload /> Course Documents
+            </Typography>
+
+            <Grid container spacing={4}>
+                <Grid item xs={12} md={4}>
+                    <Paper sx={{ p: 4, borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                        <Typography variant="subtitle1" fontWeight={700} mb={3}>Upload Section</Typography>
+                        
+                        {msg.text && <Alert severity={msg.type} sx={{ mb: 3 }} onClose={() => setMsg({ type: '', text: '' })}>{msg.text}</Alert>}
+                        
+                        <form onSubmit={handleUpload}>
+                            <Typography variant="caption" fontWeight={700} color="text.secondary" mb={1} display="block">SELECT COURSE</Typography>
+                            <TextField
+                                select
+                                fullWidth
+                                size="small"
+                                sx={{ mb: 3 }}
+                                value={courseId}
+                                onChange={e => setCourseId(e.target.value)}
+                                disabled={loadingCourses}
+                            >
+                                <MenuItem value=""><em>-- Select Course --</em></MenuItem>
+                                {courses.map(c => <MenuItem key={c.courseId || c._id} value={c.courseId || c._id}>{c.name || c.courseName}</MenuItem>)}
+                            </TextField>
+
+                            <Typography variant="caption" fontWeight={700} color="text.secondary" mb={1} display="block">UPLOAD FILE</Typography>
+                            <TextField
+                                type="file"
+                                fullWidth
+                                size="small"
+                                id="upload-course-doc-input"
+                                sx={{ mb: 4 }}
+                                onChange={handleFileChange}
+                                InputLabelProps={{ shrink: true }}
+                            />
+
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                fullWidth
+                                disabled={uploading || loadingCourses}
+                                startIcon={uploading ? <CircularProgress size={20} color="inherit" /> : <CloudUpload />}
+                                sx={{ py: 1.5, fontWeight: 800 }}
+                            >
+                                {uploading ? 'Uploading...' : 'Submit'}
+                            </Button>
+                        </form>
+                    </Paper>
+                </Grid>
+
+                <Grid item xs={12} md={8}>
+                    <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid', borderColor: 'divider', maxHeight: 600 }}>
+                        <Box sx={{ p: 2, bgcolor: 'rgba(0,0,0,0.02)', borderBottom: '1px solid', borderColor: 'divider' }}>
+                            <Typography variant="subtitle1" fontWeight={700}>📄 Document List Table</Typography>
+                        </Box>
+                        <Table size="small" stickyHeader>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell sx={{ fontWeight: 800, bgcolor: 'rgba(0,0,0,0.02)' }}>Course Name</TableCell>
+                                    <TableCell sx={{ fontWeight: 800, bgcolor: 'rgba(0,0,0,0.02)' }}>File Name</TableCell>
+                                    <TableCell sx={{ fontWeight: 800, bgcolor: 'rgba(0,0,0,0.02)' }}>Uploaded Date</TableCell>
+                                    <TableCell align="center" sx={{ fontWeight: 800, bgcolor: 'rgba(0,0,0,0.02)' }}>Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {loadingDocs ? (
+                                    <TableRow><TableCell colSpan={4} align="center" sx={{ py: 4 }}><CircularProgress size={24} /></TableCell></TableRow>
+                                ) : documents.length === 0 ? (
+                                    <TableRow><TableCell colSpan={4} align="center" sx={{ py: 4 }}>No documents found.</TableCell></TableRow>
+                                ) : documents.map((doc, i) => (
+                                    <TableRow key={doc.documentId || doc._id || i} hover>
+                                        <TableCell sx={{ fontWeight: 600 }}>{doc.courseName || doc.course}</TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" sx={{ wordBreak: 'break-all', fontWeight: 500, color: 'primary.main' }}>
+                                                {doc.fileName}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
+                                            {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleString('en-IN', {
+                                                day: '2-digit', month: 'short', year: 'numeric',
+                                                hour: '2-digit', minute: '2-digit'
+                                            }) : 'N/A'}
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                startIcon={<FileDownload fontSize="small" />}
+                                                href={getFileUrl(doc.fileUrl)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
+                                            >
+                                                Download
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Grid>
+            </Grid>
+        </Box>
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Root component
 // ═══════════════════════════════════════════════════════════════════════════
 export default function StudentModule() {
@@ -1520,11 +1725,14 @@ export default function StudentModule() {
             <Paper
                 elevation={0}
                 sx={{
-                    width: 220,
+                    width: 240,
                     flexShrink: 0,
                     borderRight: '1px solid',
                     borderColor: 'divider',
                     bgcolor: 'background.paper',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%'
                 }}
             >
                 <Box sx={{ px: 2, py: 2.5 }}>
@@ -1533,31 +1741,33 @@ export default function StudentModule() {
                     </Typography>
                 </Box>
                 <Divider />
-                <MuiList dense sx={{ pt: 1 }}>
-                    {MODULES.map(m => (
-                        <ListItem key={m.id} disablePadding>
-                            <ListItemButton
-                                selected={active === m.id}
-                                onClick={() => setActive(m.id)}
-                                sx={{
-                                    mx: 1, my: 0.3, borderRadius: 1.5,
-                                    '&.Mui-selected': {
-                                        bgcolor: 'primary.main',
-                                        color: '#fff',
-                                        '& .MuiListItemIcon-root': { color: '#fff' },
-                                        '&:hover': { bgcolor: 'primary.dark' },
-                                    },
-                                }}
-                            >
-                                <ListItemIcon sx={{ minWidth: 36 }}>{m.icon}</ListItemIcon>
-                                <ListItemText
-                                    primary={m.label}
-                                    primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: active === m.id ? 700 : 500 }}
-                                />
-                            </ListItemButton>
-                        </ListItem>
-                    ))}
-                </MuiList>
+                <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1 }}>
+                    <MuiList dense sx={{ pt: 1 }}>
+                        {MODULES.map(m => (
+                            <ListItem key={m.id} disablePadding>
+                                <ListItemButton
+                                    selected={active === m.id}
+                                    onClick={() => setActive(m.id)}
+                                    sx={{
+                                        my: 0.3, borderRadius: 1.5,
+                                        '&.Mui-selected': {
+                                            bgcolor: 'primary.main',
+                                            color: '#fff',
+                                            '& .MuiListItemIcon-root': { color: '#fff' },
+                                            '&:hover': { bgcolor: 'primary.dark' },
+                                        },
+                                    }}
+                                >
+                                    <ListItemIcon sx={{ minWidth: 36 }}>{m.icon}</ListItemIcon>
+                                    <ListItemText
+                                        primary={m.label}
+                                        primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: active === m.id ? 700 : 500 }}
+                                    />
+                                </ListItemButton>
+                            </ListItem>
+                        ))}
+                    </MuiList>
+                </Box>
 
                 <Divider sx={{ mt: 'auto' }} />
                 <Box sx={{ p: 1.5 }}>
@@ -1576,10 +1786,11 @@ export default function StudentModule() {
 
             {/* ── Right Content ── */}
             <Box sx={{ flexGrow: 1, p: 3, overflowY: 'auto' }}>
-                {active === 'dashboard' && <DashboardPanel refreshTrigger={refreshTrigger} />}
+                {active === 'dashboard' && <DashboardPanel refreshTrigger={refreshTrigger} onTabChange={setActive} />}
                 {active === 'students' && <UsersPanel />}
                 {active === 'studentList' && <StudentListModule />}
                 {active === 'courses' && <CoursesPanel />}
+                {active === 'documents' && <DocumentsPanel />}
                 {active === 'attendance' && <AttendanceControlPanel onRefresh={triggerRefresh} />}
                 {active === 'leaderboard' && <LeaderboardPanel />}
                 {active === 'notifications' && <NotificationsPanel />}
@@ -1587,6 +1798,7 @@ export default function StudentModule() {
                 {active === 'leave' && <StudentLeaveManagementPanel />}
                 {active === 'tasks' && <TasksPanel />}
                 {active === 'payment' && <PaymentModule />}
+                {active === 'certificates' && <CertificateManagementPanel />}
             </Box>
         </Box>
     );
@@ -1626,7 +1838,7 @@ function PaymentModule() {
             <Divider sx={{ mb: 3 }} />
             
             <Box sx={{ flexGrow: 1 }}>
-                {subActive === 'dashboard' && <PaymentDashboard />}
+                {subActive === 'dashboard' && <PaymentDashboard onTabChange={setSubActive} />}
                 {subActive === 'add' && <AddPaymentForm onAdded={() => setSubActive('list')} />}
                 {subActive === 'list' && <AllStudentsList />}
                 {subActive === 'student-list' && <PaymentList />}
@@ -1638,7 +1850,7 @@ function PaymentModule() {
 
 // --- Payment Sub-Views ---
 
-function PaymentDashboard() {
+function PaymentDashboard({ onTabChange }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const month = new Date().getMonth() + 1;
@@ -1654,10 +1866,10 @@ function PaymentDashboard() {
     if (loading) return <CircularProgress />;
 
     const stats = [
-        { label: 'Total Students', value: data?.totalStudents, icon: <PeopleOutlined />, color: '#1976d2' },
-        { label: 'Paid Students', value: data?.paidStudents, icon: <CheckCircle />, color: '#2e7d32' },
-        { label: 'Unpaid Students', value: data?.unpaidStudents, icon: <Cancel />, color: '#d32f2f' },
-        { label: 'Total Collection', value: `₹${(data?.totalCollection || 0).toLocaleString()}`, icon: <AccountBalanceWallet />, color: '#00bfa5' },
+        { label: 'Total Students', value: data?.totalStudents, icon: <PeopleOutlined />, color: '#1976d2', tab: 'list' },
+        { label: 'Paid Students', value: data?.paidStudents, icon: <CheckCircle />, color: '#2e7d32', tab: 'list' },
+        { label: 'Unpaid Students', value: data?.unpaidStudents, icon: <Cancel />, color: '#d32f2f', tab: 'list' },
+        { label: 'Total Collection', value: `₹${(data?.totalCollection || 0).toLocaleString()}`, icon: <AccountBalanceWallet />, color: '#00bfa5', tab: 'reports' },
     ];
 
     return (
@@ -1668,7 +1880,16 @@ function PaymentDashboard() {
             <Grid container spacing={3}>
                 {stats.map((s, i) => (
                     <Grid item xs={12} sm={6} md={3} key={i}>
-                        <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                        <Card 
+                            onClick={() => s.tab && onTabChange(s.tab)}
+                            sx={{ 
+                                borderRadius: 3, 
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                cursor: 'pointer',
+                                transition: '0.3s',
+                                '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', borderColor: s.color }
+                            }}
+                        >
                             <CardContent sx={{ textAlign: 'center', py: 3 }}>
                                 <Box sx={{ mb: 1.5, color: s.color, display: 'flex', justifyContent: 'center' }}>
                                     {React.cloneElement(s.icon, { sx: { fontSize: 32 } })}
@@ -2302,3 +2523,408 @@ function PaymentReports() {
         </Box>
     );
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Module: Certificates
+// ═══════════════════════════════════════════════════════════════════════════
+function CertificateManagementPanel() {
+    const [subActive, setSubActive] = useState('dashboard');
+    const [stats, setStats] = useState({ totalRequests: 0, pendingRequests: 0, completedCertificates: 0 });
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [form, setForm] = useState({ courseName: '', content: '', duration: '' });
+    const [saving, setSaving] = useState(false);
+    const [msg, setMsg] = useState({ type: '', text: '' });
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    const menu = [
+        { id: 'dashboard', label: 'Dashboard', icon: <Dashboard fontSize="small" /> },
+        { id: 'pending', label: 'Pending Requests', icon: <PendingActions fontSize="small" /> },
+        { id: 'completed', label: 'Completed Certificates', icon: <VerifiedUser fontSize="small" /> },
+    ];
+
+    useEffect(() => {
+        setLoading(true);
+        if (subActive === 'dashboard') {
+            certificateAPI.getDashboard()
+                .then(res => setStats(res.data.data || { totalRequests: 0, pendingRequests: 0, completedCertificates: 0 }))
+                .catch(err => setMsg({ type: 'error', text: 'Failed to load dashboard' }))
+                .finally(() => setLoading(false));
+        } else if (subActive === 'pending') {
+            certificateAPI.getRequests({ status: 'Pending' })
+                .then(res => setRequests(res.data.data || []))
+                .catch(err => setMsg({ type: 'error', text: 'Failed to load pending requests' }))
+                .finally(() => setLoading(false));
+        } else if (subActive === 'completed') {
+            certificateAPI.getAllCertificates()
+                .then(res => setRequests(res.data.data || []))
+                .catch(err => setMsg({ type: 'error', text: 'Failed to load completed certificates' }))
+                .finally(() => setLoading(false));
+        }
+    }, [subActive, refreshTrigger]);
+
+    const getFileUrl = (url) => {
+        if (!url) return '#';
+        if (url.startsWith('http')) return url;
+        const base = STUDENT_API_URL.replace('/api', '');
+        return `${base}/${url.startsWith('/') ? url.slice(1) : url}`;
+    };
+
+    // Format date string safely
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '—';
+        return new Date(dateStr).toLocaleDateString('en-IN', {
+            day: '2-digit', month: 'short', year: 'numeric'
+        });
+    };
+
+    const handleOpenModal = (req) => {
+        setSelectedRequest(req);
+        // Auto-fill from userId object if available, otherwise fallback to top-level or empty
+        setForm({
+            courseName: req.userId?.courseName || req.courseName || '',
+            content: '',
+            duration: req.userId?.courseDuration || req.duration || ''
+        });
+        setModalOpen(true);
+    };
+
+    const handleGenerate = async () => {
+        if (!form.courseName || !form.content || !form.duration) {
+            setMsg({ type: 'error', text: 'Please fill all fields' });
+            return;
+        }
+        if (!window.confirm('Are you sure you want to generate this certificate?')) return;
+        
+        setSaving(true);
+        try {
+            await certificateAPI.generate({
+                requestId: selectedRequest._id,
+                courseName: form.courseName,
+                content: form.content,
+                duration: form.duration
+            });
+            setMsg({ type: 'success', text: 'Certificate Generated Successfully!' });
+            setModalOpen(false);
+            setRefreshTrigger(prev => prev + 1);
+        } catch (err) {
+            setMsg({ type: 'error', text: err.response?.data?.message || 'Failed to generate certificate' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDownload = async (row) => {
+        console.log('handleDownload row:', JSON.stringify(row, null, 2));
+        const certId = row._id;
+        
+        try {
+            setMsg({ type: 'info', text: 'Starting download...' });
+            
+            const res = await certificateAPI.download(certId);
+
+            const blob = new Blob([res.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Certificate_${row.certificateNumber || certId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            setMsg({ type: 'success', text: 'Certificate downloaded successfully!' });
+        } catch (err) {
+            console.error('Download error:', err);
+            let errorMessage = 'Failed to download certificate';
+            
+            // If error is a blob, try to read it as text to get the JSON error message
+            if (err.response?.data instanceof Blob) {
+                const text = await err.response.data.text();
+                try {
+                    const json = JSON.parse(text);
+                    errorMessage = json.message || errorMessage;
+                } catch { }
+            } else {
+                errorMessage = err.response?.data?.message || errorMessage;
+            }
+            
+            setMsg({ type: 'error', text: errorMessage });
+        }
+    };
+
+    const handleView = async (row) => {
+        console.log('handleView row:', JSON.stringify(row, null, 2));
+        const certId = row._id;
+        
+        try {
+            setMsg({ type: 'info', text: 'Opening preview...' });
+            
+            const res = await certificateAPI.view(certId);
+
+            const blob = new Blob([res.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setMsg({ type: 'success', text: 'Preview opened in new tab' });
+        } catch (err) {
+            console.error('Preview error:', err);
+            let errorMessage = 'Failed to open preview';
+            if (err.response?.data instanceof Blob) {
+                const text = await err.response.data.text();
+                try {
+                    const json = JSON.parse(text);
+                    errorMessage = json.message || errorMessage;
+                } catch { }
+            } else {
+                errorMessage = err.response?.data?.message || errorMessage;
+            }
+            setMsg({ type: 'error', text: errorMessage });
+        }
+    };
+
+    const filteredRequests = requests.filter(r => {
+        if (!searchTerm) return true;
+        const search = searchTerm.toLowerCase();
+        if (subActive === 'completed') {
+            return (
+                r.userId?.name?.toLowerCase().includes(search) ||
+                r.userId?.email?.toLowerCase().includes(search) ||
+                r.certificateNumber?.toLowerCase().includes(search) ||
+                r.courseName?.toLowerCase().includes(search)
+            );
+        }
+        return (
+            r.studentName?.toLowerCase().includes(search) ||
+            r.studentEmail?.toLowerCase().includes(search) ||
+            r.courseName?.toLowerCase().includes(search)
+        );
+    });
+
+    return (
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Typography variant="h6" fontWeight={800} color="primary.main" mb={3} display="flex" alignItems="center" gap={1}>
+                <VerifiedUser /> Certificate Management
+            </Typography>
+
+            <Box sx={{ mb: 3, display: 'flex', gap: 1 }}>
+                {menu.map(m => (
+                    <Button
+                        key={m.id}
+                        size="small"
+                        variant={subActive === m.id ? 'contained' : 'outlined'}
+                        startIcon={m.icon}
+                        onClick={() => { setSubActive(m.id); setMsg({ type: '', text: '' }); setSearchTerm(''); }}
+                        sx={{ borderRadius: 2, textTransform: 'none', px: 2 }}
+                    >
+                        {m.label}
+                    </Button>
+                ))}
+            </Box>
+            
+            <Divider sx={{ mb: 3 }} />
+
+            {msg.text && (
+                <Alert severity={msg.type} sx={{ mb: 3 }} onClose={() => setMsg({ type: '', text: '' })}>
+                    {msg.text}
+                </Alert>
+            )}
+
+            {subActive === 'dashboard' && (
+                <Grid container spacing={3}>
+                    {[
+                        { label: 'Total Requests', value: stats.totalRequests, icon: <Assignment />, color: '#1976d2', bg: 'linear-gradient(135deg, #1976d2 0%, #64b5f6 100%)' },
+                        { label: 'Pending Requests', value: stats.pendingRequests, icon: <PendingActions />, color: '#ed6c02', bg: 'linear-gradient(135deg, #ed6c02 0%, #ffb74d 100%)' },
+                        { label: 'Completed Certificates', value: stats.completedCertificates, icon: <VerifiedUser />, color: '#2e7d32', bg: 'linear-gradient(135deg, #2e7d32 0%, #81c784 100%)' },
+                    ].map((card, i) => (
+                        <Grid item xs={12} sm={4} key={i}>
+                            <Card sx={{ 
+                                borderRadius: 4, 
+                                background: card.bg,
+                                color: '#fff',
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                                transition: 'transform 0.3s ease',
+                                '&:hover': { transform: 'translateY(-5px)' }
+                            }}>
+                                <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 3, py: 3 }}>
+                                    <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: 56, height: 56 }}>
+                                        {card.icon}
+                                    </Avatar>
+                                    <Box>
+                                        <Typography variant="overline" sx={{ opacity: 0.8, fontWeight: 700, letterSpacing: 1.2 }}>{card.label}</Typography>
+                                        <Typography variant="h3" fontWeight={900}>
+                                            {loading ? <CircularProgress size={28} color="inherit" /> : card.value}
+                                        </Typography>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
+
+            {(subActive === 'pending' || subActive === 'completed') && (
+                <>
+                    <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <TextField
+                            size="small"
+                            placeholder="Search by student name or email..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            sx={{ width: 300 }}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment>,
+                            }}
+                        />
+                        <Button variant="outlined" size="small" startIcon={<Refresh />} onClick={() => setRefreshTrigger(prev => prev + 1)}>
+                            Refresh
+                        </Button>
+                    </Box>
+
+                    <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
+                        <Table size="small">
+                            <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
+                                <TableRow>
+                                    <TableCell sx={{ fontWeight: 800 }}>Student Name</TableCell>
+                                    {subActive === 'pending' && <TableCell sx={{ fontWeight: 800 }}>Course</TableCell>}
+                                    {subActive === 'completed' && <TableCell sx={{ fontWeight: 800 }}>Course Name</TableCell>}
+                                    {subActive === 'completed' && <TableCell sx={{ fontWeight: 800 }}>Certificate Number</TableCell>}
+                                    <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
+                                    <TableCell sx={{ fontWeight: 800 }}>{subActive === 'pending' ? 'Requested Date' : 'Issued Date'}</TableCell>
+                                    <TableCell sx={{ fontWeight: 800 }} align="center">Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {loading ? (
+                                    <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4 }}><CircularProgress size={24} /></TableCell></TableRow>
+                                ) : filteredRequests.length === 0 ? (
+                                    <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4 }}>No requests found.</TableCell></TableRow>
+                                ) : filteredRequests.map((row) => (
+                                    <TableRow key={row._id} hover>
+                                        <TableCell>
+                                            <Typography variant="body2" fontWeight={600}>
+                                                {subActive === 'completed' ? row.userId?.name : row.studentName}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {subActive === 'completed' ? row.userId?.email : row.studentEmail}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell>{row.courseName}</TableCell>
+                                        {subActive === 'completed' && <TableCell sx={{ fontWeight: 600 }}>{row.certificateNumber || '—'}</TableCell>}
+                                        <TableCell>
+                                            <Chip 
+                                                label={subActive === 'completed' ? 'Issued' : row.status} 
+                                                size="small" 
+                                                color={subActive === 'completed' || row.status === 'Completed' ? 'success' : 'warning'} 
+                                                sx={{ fontWeight: 700 }} 
+                                            />
+                                        </TableCell>
+                                        <TableCell>{formatDate(subActive === 'completed' ? row.issuedAt : (subActive === 'pending' ? row.createdAt : row.issuedDate))}</TableCell>
+                                        <TableCell align="center">
+                                            {subActive === 'pending' ? (
+                                                <Button 
+                                                    size="small" 
+                                                    variant="contained" 
+                                                    color="primary"
+                                                    onClick={() => handleOpenModal(row)}
+                                                >
+                                                    Generate
+                                                </Button>
+                                            ) : (
+                                                <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                                                    <Button 
+                                                        size="small" 
+                                                        variant="outlined" 
+                                                        color="primary"
+                                                        startIcon={<Visibility />}
+                                                        onClick={() => handleView(row)}
+                                                    >
+                                                        View
+                                                    </Button>
+                                                    <Button 
+                                                        size="small" 
+                                                        variant="outlined" 
+                                                        startIcon={<FileDownload />}
+                                                        onClick={() => handleDownload(row)}
+                                                    >
+                                                        Download
+                                                    </Button>
+                                                </Box>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </>
+            )}
+
+            {/* Generate Certificate Modal */}
+            <Dialog open={modalOpen} onClose={() => !saving && setModalOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ fontWeight: 800, color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <VerifiedUser /> Generate Certificate
+                </DialogTitle>
+                <DialogContent dividers>
+                    {msg.text && msg.type === 'error' && (
+                        <Alert severity="error" sx={{ mb: 2 }}>{msg.text}</Alert>
+                    )}
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Student Name:</Typography>
+                            <TextField 
+                                fullWidth size="small" 
+                                value={selectedRequest?.studentName || ''} 
+                                InputProps={{ readOnly: true }} 
+                                sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Course Name:</Typography>
+                            <TextField 
+                                fullWidth size="small" 
+                                value={form.courseName} 
+                                onChange={(e) => setForm({...form, courseName: e.target.value})}
+                                placeholder="E.g. Full Stack Web Development"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Duration:</Typography>
+                            <TextField 
+                                fullWidth size="small" 
+                                value={form.duration} 
+                                onChange={(e) => setForm({...form, duration: e.target.value})}
+                                placeholder="E.g. 6 Months"
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Content / Description:</Typography>
+                            <TextField 
+                                fullWidth size="small" 
+                                multiline rows={3}
+                                value={form.content} 
+                                onChange={(e) => setForm({...form, content: e.target.value})}
+                                placeholder="Enter the certificate content or achievement description..."
+                            />
+                        </Grid>
+                    </Grid>
+                </DialogContent>
+                <DialogActions sx={{ p: 2, bgcolor: 'rgba(0,0,0,0.01)' }}>
+                    <Button onClick={() => setModalOpen(false)} disabled={saving} color="inherit">
+                        Cancel
+                    </Button>
+                    <Button 
+                        onClick={handleGenerate} 
+                        variant="contained" 
+                        disabled={saving}
+                        startIcon={saving && <CircularProgress size={16} color="inherit" />}
+                    >
+                        {saving ? 'Generating...' : 'Generate Certificate'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Box>
+    );
+}
+

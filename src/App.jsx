@@ -33,6 +33,7 @@ import PerformanceManagement from './pages/PerformanceManagement';
 import DocumentManagement from './pages/DocumentManagement';
 import StudentModule from './pages/student/StudentModule';
 import StudentAssignment from './pages/student/StudentAssignment';
+import CertificateManagement from './pages/CertificateManagement';
 import CourseCatalog from './pages/studentPortal/CourseCatalog';
 import CourseDetails from './pages/studentPortal/CourseDetails';
 import LessonViewer from './pages/studentPortal/LessonViewer';
@@ -40,6 +41,7 @@ import StudentAttendance from './pages/studentPortal/StudentAttendance';
 import Leaderboard from './pages/studentPortal/Leaderboard';
 import StudentNotifications from './pages/studentPortal/StudentNotifications';
 import MyCourses from './pages/studentPortal/MyCourses';
+import MyCertificates from './pages/studentPortal/MyCertificates';
 
 // Shared component overrides (same for both themes)
 const sharedComponents = {
@@ -654,6 +656,16 @@ function AppRoutes() {
                     </ProtectedRoute>
                 }
             />
+            <Route
+                path="/certificates"
+                element={
+                    <ProtectedRoute requiredRole="HR">
+                        <AppLayout>
+                            <CertificateManagement />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
             
             {/* Student Portal Routes */}
             <Route
@@ -722,6 +734,16 @@ function AppRoutes() {
                     <ProtectedRoute requiredRole="Student">
                         <AppLayout>
                             <StudentNotifications />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/my-certificates"
+                element={
+                    <ProtectedRoute requiredRole="Student">
+                        <AppLayout>
+                            <MyCertificates />
                         </AppLayout>
                     </ProtectedRoute>
                 }

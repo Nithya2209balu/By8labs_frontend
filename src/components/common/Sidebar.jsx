@@ -32,7 +32,8 @@ import {
     Mail,
     FolderShared,
     SchoolOutlined,
-    MenuBook
+    MenuBook,
+    Article
 } from '@mui/icons-material';
 import SidebarCalendar from './SidebarCalendar';
 
@@ -54,12 +55,14 @@ const Sidebar = ({ mobileOpen, onClose }) => {
     const menuItems = [
         { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard', roles: ['HR', 'Manager', 'Employee', 'Student'] },
         { text: 'My Courses', icon: <MenuBook />, path: '/my-courses', roles: ['Student'] },
+        { text: 'My Certificates', icon: <VerifiedUser />, path: '/my-certificates', roles: ['Student'] },
         { text: 'Course Catalog', icon: <MenuBook />, path: '/student-courses', roles: ['Student'] },
         { text: 'My Attendance', icon: <AccessTime />, path: '/student-attendance', roles: ['Student'] },
         { text: 'Leaderboard', icon: <Assessment />, path: '/student-leaderboard', roles: ['Student'] },
         { text: 'Notifications', icon: <Campaign />, path: '/student-notifications', roles: ['Student'] },
         { text: 'Employees', icon: <People />, path: '/employees', roles: ['HR'] },
         { text: 'Students', icon: <SchoolOutlined />, path: '/students', roles: ['HR'] },
+        { text: 'Certificates', icon: <Article />, path: '/certificates', roles: ['HR'] },
         // { text: 'Assignments', icon: <Assessment />, path: '/student-assignments', roles: ['HR', 'Manager'] },
         { text: 'Attendance', icon: <AccessTime />, path: '/attendance', roles: ['HR', 'Manager', 'Employee'] },
         { text: 'Leave Management', icon: <EventNote />, path: '/leaves', roles: ['HR', 'Manager', 'Employee'] },

@@ -13,6 +13,10 @@ import {
 } from '@mui/material';
 import { Edit, Delete, AccessTime, Person } from '@mui/icons-material';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace('/api', '')
+    : 'http://localhost:5000';
+
 const AnnouncementCard = ({ announcement, isHR, onEdit, onDelete }) => {
     const [imageDialogOpen, setImageDialogOpen] = React.useState(false);
     const [selectedImage, setSelectedImage] = React.useState(null);
@@ -90,7 +94,7 @@ const AnnouncementCard = ({ announcement, isHR, onEdit, onDelete }) => {
                                         onClick={() => handleImageClick(image)}
                                     >
                                         <img
-                                            src={`https://by8labs-backend.onrender.com/${image}`}
+                                            src={`${BACKEND_URL}/${image}`}
                                             alt={`Announcement image ${index + 1}`}
                                             loading="lazy"
                                             style={{ objectFit: 'cover', borderRadius: '4px' }}
@@ -114,7 +118,7 @@ const AnnouncementCard = ({ announcement, isHR, onEdit, onDelete }) => {
                                             controls
                                             style={{ width: '100%', maxHeight: '400px', borderRadius: '8px' }}
                                         >
-                                            <source src={`https://by8labs-backend.onrender.com/${video}`} type="video/mp4" />
+                                            <source src={`${BACKEND_URL}/${video}`} type="video/mp4" />
                                             Your browser does not support the video tag.
                                         </video>
                                     </Grid>
@@ -133,7 +137,7 @@ const AnnouncementCard = ({ announcement, isHR, onEdit, onDelete }) => {
             >
                 {selectedImage && (
                     <img
-                        src={`https://by8labs-backend.onrender.com/${selectedImage}`}
+                        src={`${BACKEND_URL}/${selectedImage}`}
                         alt="Full size"
                         style={{ width: '100%', height: 'auto' }}
                     />

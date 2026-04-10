@@ -133,5 +133,28 @@ export const paymentAPI = {
     getStudentCourse: (userId) => studentApi.get(`/payments/admin/student-course/${userId}`),
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Document API
+// ═══════════════════════════════════════════════════════════════════════════
+export const documentAPI = {
+    getAllAdminDocuments: () => studentApi.get('/documents/admin/all'),
+    uploadDocument: (data) => studentApi.post('/documents/upload', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    })
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Certificate API
+// ═══════════════════════════════════════════════════════════════════════════
+export const certificateAPI = {
+    getRequests:      (params) => studentApi.get('/certificates/requests', { params }),
+    generate:         (data)   => studentApi.post('/certificates/generate', data),
+    download:         (certId) => studentApi.get(`/certificates/download/${certId}`, { responseType: 'blob' }),
+    view:             (certId) => studentApi.get(`/certificates/view/${certId}`, { responseType: 'blob' }),
+    getDashboard:     ()       => studentApi.get('/certificates/dashboard'),
+    getAllCertificates: ()     => studentApi.get('/certificates/all'),
+    getCertificatesByUserId: (userId) => studentApi.get(`/certificates/user/${userId}`),
+};
+
 export default studentApi;
 
