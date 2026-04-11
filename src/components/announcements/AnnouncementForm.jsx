@@ -16,9 +16,7 @@ import {
 } from '@mui/material';
 import { Close, CloudUpload, Delete, Image, VideoLibrary } from '@mui/icons-material';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL
-    ? import.meta.env.VITE_API_URL.replace('/api', '')
-    : 'http://localhost:5000';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 const AnnouncementForm = ({ open, onClose, onSubmit, announcement = null }) => {
     const [formData, setFormData] = useState({
