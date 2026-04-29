@@ -275,8 +275,9 @@ const EmployeeAbout = ({ employee, onUpdate, isOwnProfile = false }) => {
                         fullWidth
                         label="Employee Code"
                         value={formData.employeeId || ''}
-                        InputProps={{ readOnly: true }}
-                        helperText="Employee ID cannot be changed"
+                        onChange={(e) => handleChange('employeeId', e.target.value)}
+                        InputProps={{ readOnly: !isEditing }}
+                        helperText={isEditing ? "Unique Employee ID (e.g., B8LB1001)" : "Official employee identifier"}
                     />
                 </Grid>
 
