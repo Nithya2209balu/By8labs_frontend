@@ -192,7 +192,7 @@ const Dashboard = () => {
             title: 'Total Employees',
             value: stats?.totalEmployees || 0,
             icon: <People />,
-            color: '#1976d2',
+            color: '#111827', // Black/Deep Gray
             visible: isHR,
             path: '/employees'
         },
@@ -200,7 +200,7 @@ const Dashboard = () => {
             title: 'Pending Leaves',
             value: stats?.pendingLeaves || 0,
             icon: <EventNote />,
-            color: '#ed6c02',
+            color: '#374151', // Slate-700
             visible: isHR,
             path: '/leaves'
         },
@@ -208,7 +208,7 @@ const Dashboard = () => {
             title: 'Monthly Payroll',
             value: stats?.monthlyPayroll ? `₹${stats.monthlyPayroll}` : '₹0',
             icon: <AttachMoney />,
-            color: '#2e7d32',
+            color: '#4b5563', // Gray-600
             visible: isHR,
             path: '/payroll'
         },
@@ -216,7 +216,7 @@ const Dashboard = () => {
             title: 'Attendance Rate',
             value: stats?.attendanceRate ? `${stats.attendanceRate}%` : '0%',
             icon: <TrendingUp />,
-            color: '#9c27b0',
+            color: '#000000', // Black
             visible: true,
             path: '/attendance'
         }
@@ -319,7 +319,7 @@ const Dashboard = () => {
                             textAlign: 'center'
                         }}
                     >
-                        <LockOpen sx={{ fontSize: 60, color: '#1976d2', mb: 2 }} />
+                        <LockOpen sx={{ fontSize: 60, color: '#000000', mb: 2 }} />
 
                         <Typography variant="h4" gutterBottom fontWeight="bold">
                             Access Required
@@ -407,11 +407,11 @@ const Dashboard = () => {
 
                                 <Button
                                     variant="contained"
-                                    color="error"
+                                    color="inherit"
                                     startIcon={<Cancel />}
                                     onClick={() => handleMarkAttendance('Absent')}
                                     disabled={markingAttendance}
-                                    sx={{ fontWeight: 'bold', backgroundColor: '#d32f2f', '&:hover': { backgroundColor: '#c62828' } }}
+                                    sx={{ fontWeight: 'bold', backgroundColor: '#374151', color: '#fff', '&:hover': { backgroundColor: '#111827' } }}
                                 >
                                     Absent
                                 </Button>
@@ -496,9 +496,9 @@ const Dashboard = () => {
 
                     {/* HR: Pending Access Requests */}
                     {isHR && accessRequests.length > 0 && (
-                        <Paper elevation={3} sx={{ p: 3, mb: 4, borderLeft: '6px solid #ed6c02' }}>
+                        <Paper elevation={3} sx={{ p: 3, mb: 4, borderLeft: '6px solid #000000' }}>
                             <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                                <LockOpen sx={{ mr: 1, color: '#ed6c02' }} />
+                                <LockOpen sx={{ mr: 1, color: '#000000' }} />
                                 Pending Access Requests ({accessRequests.length})
                             </Typography>
                             <Box sx={{ mt: 2 }}>
@@ -604,7 +604,7 @@ const Dashboard = () => {
                                             >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                                        <Avatar sx={{ bgcolor: '#2e7d32', mr: 2 }}>
+                                                        <Avatar sx={{ bgcolor: '#000000', mr: 2 }}>
                                                             <CheckCircle />
                                                         </Avatar>
                                                         <Box>
@@ -629,7 +629,7 @@ const Dashboard = () => {
                                             >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                                        <Avatar sx={{ bgcolor: '#d32f2f', mr: 2 }}>
+                                                        <Avatar sx={{ bgcolor: '#374151', mr: 2 }}>
                                                             <Cancel />
                                                         </Avatar>
                                                         <Box>
@@ -654,7 +654,7 @@ const Dashboard = () => {
                                             >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                                        <Avatar sx={{ bgcolor: '#ed6c02', mr: 2 }}>
+                                                        <Avatar sx={{ bgcolor: '#4b5563', mr: 2 }}>
                                                             <AccessTime />
                                                         </Avatar>
                                                         <Box>
@@ -679,7 +679,7 @@ const Dashboard = () => {
                                             >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                                        <Avatar sx={{ bgcolor: '#9c27b0', mr: 2 }}>
+                                                        <Avatar sx={{ bgcolor: '#111827', mr: 2 }}>
                                                             <EventNote />
                                                         </Avatar>
                                                         <Box>
@@ -704,7 +704,7 @@ const Dashboard = () => {
                                             >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                                        <Avatar sx={{ bgcolor: '#ed6c02', mr: 2 }}>
+                                                        <Avatar sx={{ bgcolor: '#4b5563', mr: 2 }}>
                                                             <EventNote />
                                                         </Avatar>
                                                         <Box>
@@ -729,7 +729,7 @@ const Dashboard = () => {
                                             >
                                                 <CardContent>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                                        <Avatar sx={{ bgcolor: '#1976d2', mr: 2 }}>
+                                                        <Avatar sx={{ bgcolor: '#000000', mr: 2 }}>
                                                             <TrendingUp />
                                                         </Avatar>
                                                         <Box>

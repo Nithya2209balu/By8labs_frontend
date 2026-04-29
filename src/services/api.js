@@ -180,8 +180,13 @@ export const emailsAPI = {
     deleteEmail: (id) => api.delete(`/emails/${id}`),
 
     // External Email APIs (Hostinger)
-    getExternalInbox: () => api.get('/emails/external/inbox', { timeout: 60000 }), // 60s timeout
-    getExternalEmailById: (uid) => api.get(`/emails/external/message/${uid}`)
+    getExternalInbox: (emailPassword) => api.get('/emails/external/inbox', { 
+        timeout: 60000,
+        headers: emailPassword ? { 'X-Hostinger-Password': emailPassword } : {}
+    }), 
+    getExternalEmailById: (uid, emailPassword) => api.get(`/emails/external/message/${uid}`, {
+        headers: emailPassword ? { 'X-Hostinger-Password': emailPassword } : {}
+    })
 };
 
 // Email Configuration APIs

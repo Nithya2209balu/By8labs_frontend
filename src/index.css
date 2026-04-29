@@ -23,5 +23,5 @@ code {
 
 .notif-highlight {
   animation: notifPulse 0.8s ease-out 3;
-  border-radius: 8px;
+
 }

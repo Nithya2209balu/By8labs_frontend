@@ -45,8 +45,8 @@ const Header = ({ onMenuToggle }) => {
             position="fixed"
             sx={{
                 zIndex: (t) => t.zIndex.drawer + 1,
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-                boxShadow: `0 4px 12px ${theme.palette.primary.main}40`,
+                background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 100%)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
             }}
         >
             <Toolbar sx={{ gap: 1, minHeight: 100 }}>
@@ -136,10 +136,10 @@ const Header = ({ onMenuToggle }) => {
                             sx={{
                                 width: 42,
                                 height: 42,
-                                bgcolor: 'rgba(255,255,255,0.2)',
+                                bgcolor: 'rgba(255,255,255,0.1)',
                                 color: 'white',
                                 fontWeight: 700,
-                                border: '2px solid rgba(255,255,255,0.3)',
+                                border: '2px solid rgba(255,255,255,0.2)',
                                 fontSize: '1rem',
                             }}
                         >
@@ -167,12 +167,12 @@ const Header = ({ onMenuToggle }) => {
                         sx={{
                             py: 1.5,
                             '&:hover': {
-                                bgcolor: '#f0fdf4',
-                                color: '#10b981'
+                                bgcolor: '#f3f4f6',
+                                color: '#000000'
                             }
                         }}
                     >
-                        <AccountCircle sx={{ mr: 1.5, color: '#10b981' }} />
+                        <AccountCircle sx={{ mr: 1.5, color: '#000000' }} />
                         Profile
                     </MenuItem>
 
@@ -181,12 +181,12 @@ const Header = ({ onMenuToggle }) => {
                         sx={{
                             py: 1.5,
                             '&:hover': {
-                                bgcolor: '#fef2f2',
-                                color: '#ef4444'
+                                bgcolor: '#f9fafb',
+                                color: '#4b5563'
                             }
                         }}
                     >
-                        <Logout sx={{ mr: 1.5, color: '#ef4444' }} />
+                        <Logout sx={{ mr: 1.5, color: '#4b5563' }} />
                         Logout
                     </MenuItem>
                 </Menu>

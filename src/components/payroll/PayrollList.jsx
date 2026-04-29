@@ -362,94 +362,94 @@ const PayrollList = () => {
                     <TableHead>
                         <TableRow sx={{ bgcolor: 'primary.main' }}>
                             {isHR && (
-                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>
+                                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>
                                     <TableSortLabel
                                         active={orderBy === 'employeeId'}
                                         direction={orderBy === 'employeeId' ? order : 'asc'}
                                         onClick={() => handleRequestSort('employeeId')}
                                         sx={{
-                                            color: 'black !important',
-                                            '&.Mui-active': { color: 'black !important' },
-                                            '& .MuiTableSortLabel-icon': { color: 'black !important' }
+                                            color: 'white !important',
+                                            '&.Mui-active': { color: 'white !important' },
+                                            '& .MuiTableSortLabel-icon': { color: 'white !important' }
                                         }}
                                     >
                                         Employee ID
                                     </TableSortLabel>
                                 </TableCell>
                             )}
-                            <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>
                                 <TableSortLabel
                                     active={orderBy === 'employeeName'}
                                     direction={orderBy === 'employeeName' ? order : 'asc'}
                                     onClick={() => handleRequestSort('employeeName')}
                                     sx={{
-                                        color: 'black !important',
-                                        '&.Mui-active': { color: 'black !important' },
-                                        '& .MuiTableSortLabel-icon': { color: 'black !important' }
+                                        color: 'white !important',
+                                        '&.Mui-active': { color: 'white !important' },
+                                        '& .MuiTableSortLabel-icon': { color: 'white !important' }
                                     }}
                                 >
                                     Employee Name
                                 </TableSortLabel>
                             </TableCell>
                             {isHR && (
-                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>
+                                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>
                                     <TableSortLabel
                                         active={orderBy === 'department'}
                                         direction={orderBy === 'department' ? order : 'asc'}
                                         onClick={() => handleRequestSort('department')}
                                         sx={{
-                                            color: 'black !important',
-                                            '&.Mui-active': { color: 'black !important' },
-                                            '& .MuiTableSortLabel-icon': { color: 'black !important' }
+                                            color: 'white !important',
+                                            '&.Mui-active': { color: 'white !important' },
+                                            '& .MuiTableSortLabel-icon': { color: 'white !important' }
                                         }}
                                     >
                                         Department
                                     </TableSortLabel>
                                 </TableCell>
                             )}
-                            <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>
+                            <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>
                                 <TableSortLabel
                                     active={orderBy === 'month'}
                                     direction={orderBy === 'month' ? order : 'asc'}
                                     onClick={() => handleRequestSort('month')}
                                     sx={{
-                                        color: 'black !important',
-                                        '&.Mui-active': { color: 'black !important' },
-                                        '& .MuiTableSortLabel-icon': { color: 'black !important' }
+                                        color: 'white !important',
+                                        '&.Mui-active': { color: 'white !important' },
+                                        '& .MuiTableSortLabel-icon': { color: 'white !important' }
                                     }}
                                 >
                                     Month/Year
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell align="right" sx={{ color: 'black', fontWeight: 'bold' }}>
+                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>
                                 <TableSortLabel
                                     active={orderBy === 'monthlySalary'}
                                     direction={orderBy === 'monthlySalary' ? order : 'asc'}
                                     onClick={() => handleRequestSort('monthlySalary')}
                                     sx={{
-                                        color: 'black !important',
-                                        '&.Mui-active': { color: 'black !important' },
-                                        '& .MuiTableSortLabel-icon': { color: 'black !important' }
+                                        color: 'white !important',
+                                        '&.Mui-active': { color: 'white !important' },
+                                        '& .MuiTableSortLabel-icon': { color: 'white !important' }
                                     }}
                                 >
                                     Monthly Salary
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell align="right" sx={{ color: 'black', fontWeight: 'bold' }}>
+                            <TableCell align="right" sx={{ color: 'white', fontWeight: 'bold' }}>
                                 <TableSortLabel
                                     active={orderBy === 'netPayableSalary'}
                                     direction={orderBy === 'netPayableSalary' ? order : 'asc'}
                                     onClick={() => handleRequestSort('netPayableSalary')}
                                     sx={{
-                                        color: 'black !important',
-                                        '&.Mui-active': { color: 'black !important' },
-                                        '& .MuiTableSortLabel-icon': { color: 'black !important' }
+                                        color: 'white !important',
+                                        '&.Mui-active': { color: 'white !important' },
+                                        '& .MuiTableSortLabel-icon': { color: 'white !important' }
                                     }}
                                 >
                                     Net Payable
                                 </TableSortLabel>
                             </TableCell>
-                            <TableCell align="center" sx={{ color: 'black', fontWeight: 'bold' }}>Actions</TableCell>
+                            <TableCell align="center" sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

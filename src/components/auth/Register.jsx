@@ -92,7 +92,7 @@ const Register = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, #1b5e20 0%, #2e7d32 50%, #388e3c 100%)'
+                background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%)'
             }}
         >
             <Container maxWidth="sm">
@@ -186,7 +186,7 @@ const Register = () => {
                     <Box sx={{ mt: 2, textAlign: 'center' }}>
                         <Typography variant="body2">
                             Already have an account?{' '}
-                            <Link to="/login" style={{ color: '#1976d2', textDecoration: 'underline', cursor: 'pointer' }}>
+                            <Link to="/login" style={{ color: '#000000', textDecoration: 'underline', cursor: 'pointer', fontWeight: 600 }}>
                                 Sign In
                             </Link>
                         </Typography>

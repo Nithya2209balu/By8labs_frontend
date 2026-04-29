@@ -70,7 +70,7 @@ const Sidebar = ({ mobileOpen, onClose }) => {
         { text: 'Email', icon: <Mail />, path: '/email', roles: ['HR', 'Manager', 'Employee'] },
         { text: 'Feedback', icon: <FeedbackIcon />, path: '/feedback', roles: ['HR', 'Manager', 'Employee'] },
         { text: 'Pending Users', icon: <PersonAdd />, path: '/pending-users', roles: ['HR'] },
-        { text: 'Access Requests', icon: <VerifiedUser />, path: '/access-requests', roles: ['HR'] },
+        // { text: 'Access Requests', icon: <VerifiedUser />, path: '/access-requests', roles: ['HR'] },
         { text: 'Payroll', icon: <AttachMoney />, path: '/payroll', roles: ['HR', 'Employee'] },
         { text: 'Performance', icon: <Assessment />, path: '/performance', roles: ['HR', 'Manager', 'Employee'] },
         { text: 'Documents', icon: <FolderShared />, path: '/documents', roles: ['HR', 'Manager', 'Employee'] },
@@ -109,8 +109,8 @@ const Sidebar = ({ mobileOpen, onClose }) => {
                                     '&:hover': { bgcolor: selectedHoverBg },
                                 },
                                 '&:hover': {
-                                    bgcolor: '#f9fafb',
-                                    borderLeft: '4px solid #d1d5db',
+                                    bgcolor: '#f3f4f6',
+                                    borderLeft: '4px solid #9ca3af',
                                 },
                             }}
                         >
@@ -145,7 +145,7 @@ const Sidebar = ({ mobileOpen, onClose }) => {
                         width: drawerWidth,
                         boxSizing: 'border-box',
                         borderRight: '1px solid #e5e7eb',
-                        bgcolor: '#fafafa',
+                        bgcolor: '#ffffff',
                     },
                 }}
             >
@@ -161,7 +161,7 @@ const Sidebar = ({ mobileOpen, onClose }) => {
                         width: drawerWidth,
                         boxSizing: 'border-box',
                         borderRight: '1px solid #e5e7eb',
-                        bgcolor: '#fafafa',
+                        bgcolor: '#ffffff',
                     },
                 }}
                 open

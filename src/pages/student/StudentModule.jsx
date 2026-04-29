@@ -26,19 +26,20 @@ import {
 
 // ─── Sub-module definitions ────────────────────────────────────────────────
 const MODULES = [
-    { id: 'dashboard',      label: 'Dashboard',             icon: <Dashboard /> },
-    { id: 'students',       label: 'Users',                 icon: <PeopleOutlined /> },
-    { id: 'studentList',    label: 'Student List',          icon: <HowToReg /> },
-    { id: 'courses',        label: 'Courses',               icon: <MenuBook /> },
-    { id: 'documents',      label: 'Upload Course',         icon: <CloudUpload /> },
-    { id: 'attendance',     label: 'Attendance',            icon: <EventAvailable /> },
-    { id: 'leaderboard',    label: 'Leaderboard',           icon: <EmojiEvents /> },
-    { id: 'notifications',  label: 'Notifications',         icon: <NotificationsActive /> },
-    { id: 'enrollments',    label: 'Enrollments',           icon: <Assessment /> },
-    { id: 'leave',          label: 'Leave Management',      icon: <EventNote /> },
-    { id: 'tasks',          label: 'Tasks',                 icon: <Assignment /> },
-    { id: 'payment',        label: 'Payments',              icon: <Payments /> },
-    { id: 'certificates',   label: 'Certificates',          icon: <VerifiedUser /> },
+    { id: 'dashboard', label: 'Dashboard', icon: <Dashboard /> },
+    { id: 'students', label: 'Users', icon: <PeopleOutlined /> },
+    { id: 'studentList', label: 'Student List', icon: <HowToReg /> },
+    { id: 'admission', label: 'Admission Form', icon: <PersonSearch /> },
+    { id: 'courses', label: 'Courses', icon: <MenuBook /> },
+    { id: 'documents', label: 'Upload Course', icon: <CloudUpload /> },
+    { id: 'attendance', label: 'Attendance', icon: <EventAvailable /> },
+    { id: 'leaderboard', label: 'Leaderboard', icon: <EmojiEvents /> },
+    { id: 'notifications', label: 'Notifications', icon: <NotificationsActive /> },
+    { id: 'enrollments', label: 'Enrollments', icon: <Assessment /> },
+    { id: 'leave', label: 'Leave Management', icon: <EventNote /> },
+    { id: 'tasks', label: 'Tasks', icon: <Assignment /> },
+    { id: 'payment', label: 'Payments', icon: <Payments /> },
+    { id: 'certificates', label: 'Certificates', icon: <VerifiedUser /> },
 ];
 
 // ─── Stat card helper ──────────────────────────────────────────────────────
@@ -74,7 +75,7 @@ function DashboardPanel({ refreshTrigger, onTabChange }) {
     }, [refreshTrigger]);
 
     if (loading) return <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box>;
-    if (error)   return <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>;
+    if (error) return <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>;
 
     const sections = [
         {
@@ -117,7 +118,7 @@ function DashboardPanel({ refreshTrigger, onTabChange }) {
             <Typography variant="h5" fontWeight={800} mb={4} sx={{ color: '#00bfa5', display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Dashboard sx={{ fontSize: 28 }} /> Overall Admin Dashboard
             </Typography>
-            
+
             {sections.map((sec, idx) => (
                 <Box key={idx} sx={{ mb: 5 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.5 }}>
@@ -130,10 +131,10 @@ function DashboardPanel({ refreshTrigger, onTabChange }) {
                     <Grid container spacing={3}>
                         {sec.items.map((item, i) => (
                             <Grid item xs={12} sm={6} md={idx === 3 ? 4 : 2.8} key={i}>
-                                <Card 
+                                <Card
                                     onClick={() => item.tab && onTabChange(item.tab)}
-                                    sx={{ 
-                                        borderRadius: 4, 
+                                    sx={{
+                                        borderRadius: 4,
                                         boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
                                         border: '1px solid',
                                         borderColor: 'rgba(0,0,0,0.05)',
@@ -143,10 +144,10 @@ function DashboardPanel({ refreshTrigger, onTabChange }) {
                                     }}
                                 >
                                     <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2.5, p: 2.5, '&:last-child': { pb: 2.5 } }}>
-                                        <Box sx={{ 
+                                        <Box sx={{
                                             width: 54, height: 54, borderRadius: '50%',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            bgcolor: `${item.color}08`, 
+                                            bgcolor: `${item.color}08`,
                                             color: item.color,
                                             flexShrink: 0
                                         }}>
@@ -176,11 +177,11 @@ function DashboardPanel({ refreshTrigger, onTabChange }) {
 // ═══════════════════════════════════════════════════════════════════════════
 function UsersPanel() {
     const [students, setStudents] = useState([]);
-    const [loading, setLoading]   = useState(true);
-    const [saving, setSaving]     = useState(false);
-    const [error, setError]       = useState('');
-    const [success, setSuccess]   = useState('');
-    const [search, setSearch]     = useState('');
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [search, setSearch] = useState('');
     const [filterStatus, setFilterStatus] = useState('all'); // all, approved, pending
 
     const fetch = useCallback(async () => {
@@ -189,7 +190,7 @@ function UsersPanel() {
             const res = await adminStudentAPI.getAllStudents();
             setStudents(res.data.data || []);
         } catch { setError('Failed to load users.'); }
-        finally  { setLoading(false); }
+        finally { setLoading(false); }
     }, []);
 
     useEffect(() => { fetch(); }, [fetch]);
@@ -208,15 +209,15 @@ function UsersPanel() {
     };
 
     const filtered = students.filter(s => {
-        const matchesSearch = !search || 
+        const matchesSearch = !search ||
             s.name?.toLowerCase().includes(search.toLowerCase()) ||
             s.email?.toLowerCase().includes(search.toLowerCase()) ||
             s.studentId?.toLowerCase().includes(search.toLowerCase());
-        
-        const matchesStatus = filterStatus === 'all' || 
+
+        const matchesStatus = filterStatus === 'all' ||
             (filterStatus === 'approved' && s.isApproved) ||
             (filterStatus === 'pending' && !s.isApproved);
-        
+
         return matchesSearch && matchesStatus;
     });
 
@@ -227,7 +228,7 @@ function UsersPanel() {
                 <Button variant="outlined" size="small" startIcon={<Refresh />} onClick={fetch} disabled={loading || saving}>Refresh</Button>
             </Box>
             {success && <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 2 }}>{success}</Alert>}
-            {error   && <Alert severity="error"   onClose={() => setError('')}   sx={{ mb: 2 }}>{error}</Alert>}
+            {error && <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>{error}</Alert>}
 
             <Box display="flex" gap={2} mb={2} flexWrap="wrap">
                 <TextField
@@ -294,7 +295,7 @@ function UsersPanel() {
                                                         <IconButton size="small" color="success" disabled={saving} onClick={() => handleApprove(s._id)}><ThumbUp fontSize="small" /></IconButton>
                                                     </Tooltip>
                                                     <Tooltip title="Reject">
-                                                        <IconButton size="small" color="error"   disabled={saving} onClick={() => handleReject(s._id)}><ThumbDown fontSize="small" /></IconButton>
+                                                        <IconButton size="small" color="error" disabled={saving} onClick={() => handleReject(s._id)}><ThumbDown fontSize="small" /></IconButton>
                                                     </Tooltip>
                                                 </>
                                             ) : (
@@ -335,49 +336,49 @@ function AttStatCard({ label, value, icon, color }) {
 function AttendanceControlPanel({ onRefresh }) {
     const [attTab, setAttTab] = useState(0);
     const [students, setStudents] = useState([]);
-    const [courses, setCourses]   = useState([]);
+    const [courses, setCourses] = useState([]);
     const [loadingStudents, setLoadingStudents] = useState(true);
 
     // Tab 0 — Mark
-    const [markUserId,   setMarkUserId]   = useState('');
-    const [markStatus,   setMarkStatus]   = useState('Present');
+    const [markUserId, setMarkUserId] = useState('');
+    const [markStatus, setMarkStatus] = useState('Present');
     const [markCourseId, setMarkCourseId] = useState('');
-    const [markRemarks,  setMarkRemarks]  = useState('');
-    const [marking,      setMarking]      = useState(false);
+    const [markRemarks, setMarkRemarks] = useState('');
+    const [marking, setMarking] = useState(false);
 
     // Tab 1 — Edit (OTP)
-    const [editUserId,   setEditUserId]   = useState('');
-    const [editDate,     setEditDate]     = useState(todayStr());
-    const [otpSent,      setOtpSent]      = useState(false);
-    const [otp,          setOtp]          = useState('');
-    const [newStatus,    setNewStatus]    = useState('Present');
-    const [newRemarks,   setNewRemarks]   = useState('');
-    const [otpLoading,   setOtpLoading]   = useState(false);
+    const [editUserId, setEditUserId] = useState('');
+    const [editDate, setEditDate] = useState(todayStr());
+    const [otpSent, setOtpSent] = useState(false);
+    const [otp, setOtp] = useState('');
+    const [newStatus, setNewStatus] = useState('Present');
+    const [newRemarks, setNewRemarks] = useState('');
+    const [otpLoading, setOtpLoading] = useState(false);
 
     // Tab 2 — List
-    const [listUserId,   setListUserId]   = useState('');
-    const [filterDate,   setFilterDate]   = useState('');
-    const [startDate,    setStartDate]    = useState('');
-    const [endDate,      setEndDate]      = useState('');
-    const [records,      setRecords]      = useState([]);
-    const [listLoading,  setListLoading]  = useState(false);
+    const [listUserId, setListUserId] = useState('');
+    const [filterDate, setFilterDate] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [records, setRecords] = useState([]);
+    const [listLoading, setListLoading] = useState(false);
     const [listSearched, setListSearched] = useState(false);
 
     // Tab 3 — Summary
-    const [sumUserId,  setSumUserId]  = useState('');
-    const [summary,    setSummary]    = useState(null);
+    const [sumUserId, setSumUserId] = useState('');
+    const [summary, setSummary] = useState(null);
     const [sumLoading, setSumLoading] = useState(false);
 
     // Tab 4 — Admin
-    const [adminData,    setAdminData]    = useState([]);
+    const [adminData, setAdminData] = useState([]);
     const [adminLoading, setAdminLoading] = useState(false);
-    const [adminSearch,  setAdminSearch]  = useState('');
+    const [adminSearch, setAdminSearch] = useState('');
 
     // Shared feedback
     const [success, setSuccess] = useState('');
-    const [error,   setError]   = useState('');
+    const [error, setError] = useState('');
     const showSuccess = (msg) => { setSuccess(msg); setError(''); };
-    const showError   = (msg) => { setError(msg);   setSuccess(''); };
+    const showError = (msg) => { setError(msg); setSuccess(''); };
 
     // Dashboard Cards Data
     const [adminStats, setAdminStats] = useState(null);
@@ -498,7 +499,7 @@ function AttendanceControlPanel({ onRefresh }) {
             </Box>
 
             {success && <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 2 }}>{success}</Alert>}
-            {error   && <Alert severity="error"   onClose={() => setError('')}   sx={{ mb: 2 }}>{error}</Alert>}
+            {error && <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>{error}</Alert>}
 
             {/* Attendance Overview Cards (5 Columns) */}
             <Grid container spacing={2} mb={4}>
@@ -780,19 +781,19 @@ function AttendanceControlPanel({ onRefresh }) {
                         <>
                             <Grid container spacing={2} mb={2}>
                                 <Grid item xs={6} sm={4} md={2.4}>
-                                    <AttStatCard label="Total Days"  value={summary.totalDays}    icon={<EventAvailable />}   color="#1976d2" />
+                                    <AttStatCard label="Total Days" value={summary.totalDays} icon={<EventAvailable />} color="#1976d2" />
                                 </Grid>
                                 <Grid item xs={6} sm={4} md={2.4}>
-                                    <AttStatCard label="Present"     value={summary.presentCount} icon={<CheckCircle />}     color="#2e7d32" />
+                                    <AttStatCard label="Present" value={summary.presentCount} icon={<CheckCircle />} color="#2e7d32" />
                                 </Grid>
                                 <Grid item xs={6} sm={4} md={2.4}>
-                                    <AttStatCard label="Absent"      value={summary.absentCount}  icon={<Cancel />}          color="#d32f2f" />
+                                    <AttStatCard label="Absent" value={summary.absentCount} icon={<Cancel />} color="#d32f2f" />
                                 </Grid>
                                 <Grid item xs={6} sm={4} md={2.4}>
-                                    <AttStatCard label="Holiday"     value={summary.holidayCount} icon={<EmojiEvents />}     color="#ed6c02" />
+                                    <AttStatCard label="Holiday" value={summary.holidayCount} icon={<EmojiEvents />} color="#ed6c02" />
                                 </Grid>
                                 <Grid item xs={6} sm={4} md={2.4}>
-                                    <AttStatCard label="Attendance %" value={`${pct.toFixed(1)}%`} icon={<Assessment />}    color={pct >= 75 ? '#2e7d32' : '#d32f2f'} />
+                                    <AttStatCard label="Attendance %" value={`${pct.toFixed(1)}%`} icon={<Assessment />} color={pct >= 75 ? '#2e7d32' : '#d32f2f'} />
                                 </Grid>
                             </Grid>
                             <Paper sx={{ p: 2 }}>
@@ -814,10 +815,10 @@ function AttendanceControlPanel({ onRefresh }) {
                 <Box>
                     {adminData.length > 0 && (
                         <Grid container spacing={2} mb={3}>
-                            <Grid item xs={6} sm={3}><AttStatCard label="Total Records" value={adminTotals.total}   icon={<EventAvailable />} color="#1976d2" /></Grid>
-                            <Grid item xs={6} sm={3}><AttStatCard label="Total Present" value={adminTotals.present} icon={<CheckCircle />}   color="#2e7d32" /></Grid>
-                            <Grid item xs={6} sm={3}><AttStatCard label="Total Absent"  value={adminTotals.absent}  icon={<Cancel />}        color="#d32f2f" /></Grid>
-                            <Grid item xs={6} sm={3}><AttStatCard label="Total Holiday" value={adminTotals.holiday} icon={<EmojiEvents />}   color="#ed6c02" /></Grid>
+                            <Grid item xs={6} sm={3}><AttStatCard label="Total Records" value={adminTotals.total} icon={<EventAvailable />} color="#1976d2" /></Grid>
+                            <Grid item xs={6} sm={3}><AttStatCard label="Total Present" value={adminTotals.present} icon={<CheckCircle />} color="#2e7d32" /></Grid>
+                            <Grid item xs={6} sm={3}><AttStatCard label="Total Absent" value={adminTotals.absent} icon={<Cancel />} color="#d32f2f" /></Grid>
+                            <Grid item xs={6} sm={3}><AttStatCard label="Total Holiday" value={adminTotals.holiday} icon={<EmojiEvents />} color="#ed6c02" /></Grid>
                         </Grid>
                     )}
                     <TextField size="small" placeholder="Search…" value={adminSearch}
@@ -856,7 +857,7 @@ function AttendanceControlPanel({ onRefresh }) {
                                                 </TableCell>
                                                 <TableCell align="center">{r.totalDays ?? 0}</TableCell>
                                                 <TableCell align="center"><Chip label={r.presentCount ?? 0} size="small" color="success" variant="outlined" /></TableCell>
-                                                <TableCell align="center"><Chip label={r.absentCount  ?? 0} size="small" color="error"   variant="outlined" /></TableCell>
+                                                <TableCell align="center"><Chip label={r.absentCount ?? 0} size="small" color="error" variant="outlined" /></TableCell>
                                                 <TableCell align="center"><Chip label={r.holidayCount ?? 0} size="small" color="warning" variant="outlined" /></TableCell>
                                                 <TableCell align="center">
                                                     <Box display="flex" alignItems="center" gap={1}>
@@ -959,7 +960,7 @@ function StudentListModule() {
 function CoursesPanel() {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError]     = useState('');
+    const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
     const [catOpen, setCatOpen] = useState(false);
@@ -1021,13 +1022,13 @@ function CoursesPanel() {
                     method: 'POST',
                     body: cloudFormData
                 });
-                
+
                 const cloudData = await cloudRes.json();
-                
+
                 if (cloudData.error) {
                     throw new Error(`Cloudinary Error: ${cloudData.error.message}. Please ensure you have an unsigned upload preset named 'ml_default' in Cloudinary!`);
                 }
-                
+
                 finalImageUrl = cloudData.secure_url;
             }
 
@@ -1066,7 +1067,7 @@ function CoursesPanel() {
             </Box>
 
             {success && <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 2 }}>{success}</Alert>}
-            {error   && <Alert severity="error"   onClose={() => setError('')}   sx={{ mb: 2 }}>{error}</Alert>}
+            {error && <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>{error}</Alert>}
 
             {courses.length === 0
                 ? <Typography color="text.secondary">No courses available.</Typography>
@@ -1077,13 +1078,13 @@ function CoursesPanel() {
                                 <Card>
                                     <Box sx={{ height: 140, bgcolor: 'grey.100', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                                         {c.imageUrl ? (
-                                            <Box 
-                                                component="img" 
-                                                src={getImageUrl(c.imageUrl)} 
-                                                alt={c.name} 
+                                            <Box
+                                                component="img"
+                                                src={getImageUrl(c.imageUrl)}
+                                                alt={c.name}
                                                 sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                 onError={(e) => {
-                                                    e.target.onerror = null; 
+                                                    e.target.onerror = null;
                                                     e.target.src = 'https://via.placeholder.com/300x140.png?text=Image+Not+Found';
                                                 }}
                                             />
@@ -1184,9 +1185,9 @@ function CoursesPanel() {
 // Panel: Leaderboard
 // ═══════════════════════════════════════════════════════════════════════════
 function LeaderboardPanel() {
-    const [data, setData]       = useState([]);
+    const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError]     = useState('');
+    const [error, setError] = useState('');
 
     const fetchLeaderboard = () => {
         setLoading(true);
@@ -1203,7 +1204,7 @@ function LeaderboardPanel() {
     const medal = ['🥇', '🥈', '🥉'];
 
     if (loading) return <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box>;
-    if (error)   return <Alert severity="error">{error}</Alert>;
+    if (error) return <Alert severity="error">{error}</Alert>;
 
     return (
         <Box>
@@ -1257,9 +1258,9 @@ function LeaderboardPanel() {
 // Panel: Notifications
 // ═══════════════════════════════════════════════════════════════════════════
 function NotificationsPanel() {
-    const [notifs, setNotifs]   = useState([]);
+    const [notifs, setNotifs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError]     = useState('');
+    const [error, setError] = useState('');
 
     const fetchNotifications = () => {
         setLoading(true);
@@ -1274,7 +1275,7 @@ function NotificationsPanel() {
     }, []);
 
     if (loading) return <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box>;
-    if (error)   return <Alert severity="error">{error}</Alert>;
+    if (error) return <Alert severity="error">{error}</Alert>;
 
     return (
         <Box>
@@ -1305,9 +1306,9 @@ function NotificationsPanel() {
 // Panel: Enrollments
 // ═══════════════════════════════════════════════════════════════════════════
 function EnrollmentsPanel() {
-    const [data, setData]       = useState([]);
+    const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError]     = useState('');
+    const [error, setError] = useState('');
 
     const fetchEnrollments = () => {
         setLoading(true);
@@ -1322,7 +1323,7 @@ function EnrollmentsPanel() {
     }, []);
 
     if (loading) return <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box>;
-    if (error)   return <Alert severity="error">{error}</Alert>;
+    if (error) return <Alert severity="error">{error}</Alert>;
 
     return (
         <Box>
@@ -1400,7 +1401,7 @@ function TasksPanel() {
 
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={3}>
-                    <Card sx={{ 
+                    <Card sx={{
                         background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
                         color: '#fff',
                         borderRadius: 2,
@@ -1431,9 +1432,9 @@ function TasksPanel() {
 // ═══════════════════════════════════════════════════════════════════════════
 function PortalConnect({ onConnect }) {
     const [identifier, setIdentifier] = useState('');
-    const [password, setPassword]     = useState('');
-    const [loading, setLoading]       = useState(false);
-    const [error, setError]           = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -1501,7 +1502,7 @@ function DocumentsPanel() {
     const [documents, setDocuments] = useState([]);
     const [loadingCourses, setLoadingCourses] = useState(true);
     const [loadingDocs, setLoadingDocs] = useState(true);
-    
+
     // Upload form
     const [courseId, setCourseId] = useState('');
     const [file, setFile] = useState(null);
@@ -1525,7 +1526,7 @@ function DocumentsPanel() {
             .then(res => setCourses(res.data?.data || res.data || []))
             .catch(console.error)
             .finally(() => setLoadingCourses(false));
-            
+
         fetchDocs();
     }, [fetchDocs]);
 
@@ -1539,22 +1540,22 @@ function DocumentsPanel() {
         e.preventDefault();
         if (!courseId) return setMsg({ type: 'error', text: 'Please select a course.' });
         if (!file) return setMsg({ type: 'error', text: 'Please choose a file to upload.' });
-        
+
         setUploading(true);
         setMsg({ type: '', text: '' });
-        
+
         const selectedCourse = courses.find(c => (c.courseId || c._id) === courseId);
         const courseName = selectedCourse ? (selectedCourse.name || selectedCourse.courseName) : 'Unknown Course';
-        
+
         const formData = new FormData();
         formData.append('file', file);
         formData.append('courseId', courseId);
         formData.append('courseName', courseName);
-        
+
         const uStr = localStorage.getItem('user');
         let uploadUserId = 'admin';
         if (uStr) {
-           try { const u = JSON.parse(uStr); uploadUserId = u._id || 'admin'; } catch(e){}
+            try { const u = JSON.parse(uStr); uploadUserId = u._id || 'admin'; } catch (e) { }
         }
 
         // Add uploadUserId to formData in case backend expects it in the body instead
@@ -1592,9 +1593,9 @@ function DocumentsPanel() {
                 <Grid item xs={12} md={4}>
                     <Paper sx={{ p: 4, borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
                         <Typography variant="subtitle1" fontWeight={700} mb={3}>Upload Section</Typography>
-                        
+
                         {msg.text && <Alert severity={msg.type} sx={{ mb: 3 }} onClose={() => setMsg({ type: '', text: '' })}>{msg.text}</Alert>}
-                        
+
                         <form onSubmit={handleUpload}>
                             <Typography variant="caption" fontWeight={700} color="text.secondary" mb={1} display="block">SELECT COURSE</Typography>
                             <TextField
@@ -1693,6 +1694,265 @@ function DocumentsPanel() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Panel: Student Admission Form
+// ═══════════════════════════════════════════════════════════════════════════
+const ADMISSION_API = 'https://student-portal-znxr.onrender.com/api/admissions';
+const COURSES_API = 'https://student-portal-znxr.onrender.com/api/courses/categories/list';
+
+function AdmissionFormPanel() {
+    const [form, setForm] = useState({ name: '', course: '', phone: '', email: '', password: '' });
+    const [errors, setErrors] = useState({});
+    const [showPass, setShowPass] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [successData, setSuccessData] = useState(null);
+    const [snack, setSnack] = useState({ open: false, msg: '', severity: 'error' });
+    const [courses, setCourses] = useState([]);
+    const [coursesLoading, setCoursesLoading] = useState(true);
+
+    // Fetch courses from student portal API on mount
+    useEffect(() => {
+        setCoursesLoading(true);
+        fetch(COURSES_API)
+            .then(r => r.json())
+            .then(data => {
+                const list = (data.data || data.courses || data || []).map(c => ({
+                    _id: c._id,
+                    name: c.name || c.courseName || c.title || c.course || c._id,
+                })).filter(c => c.name);
+                setCourses(list);
+            })
+            .catch(() => setCourses([]))
+            .finally(() => setCoursesLoading(false));
+    }, []);
+
+    const validate = () => {
+        const e = {};
+        if (!form.name.trim()) e.name = 'Full name is required';
+        if (!form.course) e.course = 'Please select a course';
+        if (!form.phone.trim()) e.phone = 'Phone number is required';
+        else if (!/^\d{10}$/.test(form.phone.trim())) e.phone = 'Enter a valid 10-digit number';
+        if (!form.email.trim()) e.email = 'Email is required';
+        else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email address';
+        if (!form.password) e.password = 'Password is required';
+        else if (form.password.length < 6) e.password = 'Password must be at least 6 characters';
+        setErrors(e);
+        return Object.keys(e).length === 0;
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setForm(f => ({ ...f, [name]: value }));
+        if (errors[name]) setErrors(er => ({ ...er, [name]: '' }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!validate()) return;
+        setLoading(true);
+        try {
+            const res = await fetch(ADMISSION_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: form.name.trim(), course: form.course,
+                    phone: form.phone.trim(), email: form.email.trim(), password: form.password,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || `Server error (${res.status})`);
+            setSuccessData(data.data);
+            setForm({ name: '', course: '', phone: '', email: '', password: '' });
+            setSnack({ open: true, msg: data.message || 'Admission submitted successfully!', severity: 'success' });
+        } catch (err) {
+            setSnack({ open: true, msg: err.message || 'Submission failed. Please try again.', severity: 'error' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Box>
+            <Typography variant="h6" fontWeight={800} color="primary.main" mb={1} display="flex" alignItems="center" gap={1}>
+                <PersonSearch /> Student Admission Form
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
+                Register a new student by submitting their details. This directly creates an account in the Student Portal.
+            </Typography>
+
+            <Grid container spacing={3}>
+                {/* ── Left: Form ── */}
+                <Grid item xs={12} md={7}>
+                    <Paper elevation={2} sx={{ p: 3, borderRadius: 3 }}>
+                        <Box component="form" onSubmit={handleSubmit} noValidate>
+                            <Typography variant="overline" color="text.secondary" fontWeight={700} letterSpacing={1.2}>
+                                Personal Information
+                            </Typography>
+                            <Divider sx={{ mb: 2, mt: 0.5 }} />
+
+                            <TextField
+                                fullWidth name="name" label="Full Name *"
+                                value={form.name} onChange={handleChange}
+                                error={!!errors.name} helperText={errors.name}
+                                size="small" margin="normal"
+                                InputProps={{ startAdornment: <InputAdornment position="start"><PersonSearch sx={{ fontSize: 18, color: errors.name ? 'error.main' : 'primary.main' }} /></InputAdornment> }}
+                            />
+                            <TextField
+                                fullWidth name="email" label="Email Address *" type="email"
+                                value={form.email} onChange={handleChange}
+                                error={!!errors.email} helperText={errors.email}
+                                size="small" margin="normal"
+                                InputProps={{ startAdornment: <InputAdornment position="start"><Lock sx={{ fontSize: 18, color: errors.email ? 'error.main' : 'primary.main' }} /></InputAdornment> }}
+                            />
+                            <TextField
+                                fullWidth name="phone" label="Phone Number *" type="tel"
+                                value={form.phone} onChange={handleChange}
+                                error={!!errors.phone} helperText={errors.phone}
+                                size="small" margin="normal"
+                                InputProps={{ startAdornment: <InputAdornment position="start"><Lock sx={{ fontSize: 18, color: errors.phone ? 'error.main' : 'primary.main' }} /></InputAdornment> }}
+                            />
+                            <TextField
+                                fullWidth name="password" label="Password *"
+                                type={showPass ? 'text' : 'password'}
+                                value={form.password} onChange={handleChange}
+                                error={!!errors.password} helperText={errors.password || 'Minimum 6 characters'}
+                                size="small" margin="normal"
+                                InputProps={{
+                                    startAdornment: <InputAdornment position="start"><Lock sx={{ fontSize: 18, color: errors.password ? 'error.main' : 'primary.main' }} /></InputAdornment>,
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton size="small" onClick={() => setShowPass(v => !v)} edge="end">
+                                                {showPass ? <Visibility fontSize="small" /> : <Lock fontSize="small" />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }}
+                            />
+
+                            <Typography variant="overline" color="text.secondary" fontWeight={700} letterSpacing={1.2} sx={{ display: 'block', mt: 2 }}>
+                                Course Selection
+                            </Typography>
+                            <Divider sx={{ mb: 2, mt: 0.5 }} />
+
+                            <TextField
+                                fullWidth select name="course" label="Select Course *"
+                                value={form.course} onChange={handleChange}
+                                error={!!errors.course} helperText={errors.course}
+                                size="small"
+                                disabled={coursesLoading}
+                            >
+                                <MenuItem value="" disabled>
+                                    <em>{coursesLoading ? 'Loading courses…' : courses.length === 0 ? 'No courses available' : 'Choose a course…'}</em>
+                                </MenuItem>
+                                {courses.map(c => (
+                                    <MenuItem key={c._id} value={c.name}>
+                                        <Box display="flex" alignItems="center" gap={1}>
+                                            <MenuBook sx={{ fontSize: 16, color: 'primary.main' }} />
+                                            {c.name}
+                                        </Box>
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+
+                            <Button
+                                fullWidth type="submit" variant="contained" size="large"
+                                disabled={loading}
+                                startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <CheckCircle />}
+                                sx={{ mt: 3, py: 1.4, fontWeight: 700, borderRadius: 2 }}
+                            >
+                                {loading ? 'Submitting…' : 'Submit Admission'}
+                            </Button>
+                        </Box>
+                    </Paper>
+                </Grid>
+
+                {/* ── Right: Success / Guide ── */}
+                <Grid item xs={12} md={5}>
+                    {successData ? (
+                        <Paper elevation={2} sx={{
+                            p: 3, borderRadius: 3,
+                            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                            border: '1px solid #bbf7d0'
+                        }}>
+                            <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+                                <CheckCircle sx={{ color: '#16a34a', fontSize: 32 }} />
+                                <Box>
+                                    <Typography variant="subtitle1" fontWeight={800} color="#16a34a">Admission Successful!</Typography>
+                                    <Typography variant="body2" color="text.secondary">Student has been registered</Typography>
+                                </Box>
+                            </Box>
+                            <Divider sx={{ mb: 2 }} />
+                            {[
+                                ['Name', successData.name],
+                                ['Email', successData.email],
+                                ['Admission ID', successData.admissionId],
+                                ['User ID', successData.userId],
+                            ].filter(([, v]) => v).map(([label, value]) => (
+                                <Box key={label} sx={{ display: 'flex', mb: 1, gap: 1 }}>
+                                    <Typography variant="body2" fontWeight={700} color="text.secondary" sx={{ minWidth: 100 }}>{label}:</Typography>
+                                    <Typography variant="body2" fontWeight={600} sx={{ wordBreak: 'break-all' }}>{value}</Typography>
+                                </Box>
+                            ))}
+                            <Button
+                                fullWidth variant="outlined" color="success" size="small"
+                                sx={{ mt: 2, borderRadius: 2, fontWeight: 700 }}
+                                onClick={() => setSuccessData(null)}
+                            >
+                                + Add Another Student
+                            </Button>
+                        </Paper>
+                    ) : (
+                        <Paper elevation={0} sx={{
+                            p: 3, borderRadius: 3,
+                            border: '1px dashed', borderColor: 'divider',
+                            bgcolor: 'rgba(0,0,0,0.01)'
+                        }}>
+                            <Typography variant="subtitle2" fontWeight={700} mb={2} color="text.secondary">📋 Admission Guide</Typography>
+                            {[
+                                { icon: '👤', text: 'Enter the student\'s full legal name' },
+                                { icon: '📧', text: 'Use a valid email — it will be their login' },
+                                { icon: '📱', text: 'Phone must be exactly 10 digits' },
+                                { icon: '🔑', text: 'Set a strong password (min 6 chars)' },
+                                { icon: '📚', text: 'Choose the course they are enrolling in' },
+                                { icon: '✅', text: 'Student account is created immediately' },
+                            ].map((item, i) => (
+                                <Box key={i} display="flex" gap={1.5} mb={1.5} alignItems="flex-start">
+                                    <Typography sx={{ fontSize: 18, lineHeight: 1.4 }}>{item.icon}</Typography>
+                                    <Typography variant="body2" color="text.secondary">{item.text}</Typography>
+                                </Box>
+                            ))}
+                            <Divider sx={{ my: 2 }} />
+                            <Typography variant="caption" color="text.secondary">
+                                API: <code>POST student-portal-znxr.onrender.com/api/admissions</code>
+                            </Typography>
+                        </Paper>
+                    )}
+                </Grid>
+            </Grid>
+
+            {/* Snackbar */}
+            <Dialog open={snack.open && snack.severity === 'success'} onClose={() => setSnack(s => ({ ...s, open: false }))} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 4, overflow: 'hidden' } }}>
+                <Box sx={{ background: 'linear-gradient(135deg, #00b09b 0%, #096939 100%)', py: 3, textAlign: 'center' }}>
+                    <CheckCircle sx={{ fontSize: 60, color: '#fff' }} />
+                </Box>
+                <DialogContent sx={{ textAlign: 'center', pt: 2 }}>
+                    <Typography variant="h6" fontWeight={800} color="#096939">Admission Submitted!</Typography>
+                    <Typography variant="body2" color="text.secondary" mt={1}>{snack.msg}</Typography>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button fullWidth variant="contained" onClick={() => setSnack(s => ({ ...s, open: false }))} sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #00b09b 0%, #096939 100%)' }}>OK</Button>
+                </DialogActions>
+            </Dialog>
+
+            {snack.open && snack.severity === 'error' && (
+                <Alert severity="error" onClose={() => setSnack(s => ({ ...s, open: false }))} sx={{ mt: 2 }}>
+                    {snack.msg}
+                </Alert>
+            )}
+        </Box>
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Root component
 // ═══════════════════════════════════════════════════════════════════════════
 export default function StudentModule() {
@@ -1702,7 +1962,7 @@ export default function StudentModule() {
 
     const triggerRefresh = () => setRefreshTrigger(prev => prev + 1);
 
-    const handleConnect    = () => setConnected(true);
+    const handleConnect = () => setConnected(true);
     const handleDisconnect = useCallback(() => { clearStudentPortalToken(); setConnected(false); }, []);
 
     useEffect(() => {
@@ -1710,7 +1970,7 @@ export default function StudentModule() {
             // Force disconnect when the API detects a 401
             handleDisconnect();
         };
-        
+
         window.addEventListener('student_portal_unauthorized', handleUnauthorized);
         return () => window.removeEventListener('student_portal_unauthorized', handleUnauthorized);
     }, [handleDisconnect]);
@@ -1789,6 +2049,7 @@ export default function StudentModule() {
                 {active === 'dashboard' && <DashboardPanel refreshTrigger={refreshTrigger} onTabChange={setActive} />}
                 {active === 'students' && <UsersPanel />}
                 {active === 'studentList' && <StudentListModule />}
+                {active === 'admission' && <AdmissionFormPanel />}
                 {active === 'courses' && <CoursesPanel />}
                 {active === 'documents' && <DocumentsPanel />}
                 {active === 'attendance' && <AttendanceControlPanel onRefresh={triggerRefresh} />}
@@ -1809,13 +2070,13 @@ export default function StudentModule() {
 // ═══════════════════════════════════════════════════════════════════════════
 function PaymentModule() {
     const [subActive, setSubActive] = useState('dashboard');
-    
+
     const menu = [
-        { id: 'dashboard', label: 'Dashboard',   icon: <Dashboard fontSize="small" /> },
-        { id: 'add',       label: 'Add Payment', icon: <AddCard fontSize="small" /> },
-        { id: 'list',      label: 'All Students', icon: <ListAlt fontSize="small" /> },
+        { id: 'dashboard', label: 'Dashboard', icon: <Dashboard fontSize="small" /> },
+        { id: 'add', label: 'Add Payment', icon: <AddCard fontSize="small" /> },
+        { id: 'list', label: 'All Students', icon: <ListAlt fontSize="small" /> },
         { id: 'student-list', label: 'Student List', icon: <Group fontSize="small" /> },
-        { id: 'reports',   label: 'Reports',     icon: <FileDownload fontSize="small" /> },
+        { id: 'reports', label: 'Reports', icon: <FileDownload fontSize="small" /> },
     ];
 
     return (
@@ -1834,9 +2095,9 @@ function PaymentModule() {
                     </Button>
                 ))}
             </Box>
-            
+
             <Divider sx={{ mb: 3 }} />
-            
+
             <Box sx={{ flexGrow: 1 }}>
                 {subActive === 'dashboard' && <PaymentDashboard onTabChange={setSubActive} />}
                 {subActive === 'add' && <AddPaymentForm onAdded={() => setSubActive('list')} />}
@@ -1880,10 +2141,10 @@ function PaymentDashboard({ onTabChange }) {
             <Grid container spacing={3}>
                 {stats.map((s, i) => (
                     <Grid item xs={12} sm={6} md={3} key={i}>
-                        <Card 
+                        <Card
                             onClick={() => s.tab && onTabChange(s.tab)}
-                            sx={{ 
-                                borderRadius: 3, 
+                            sx={{
+                                borderRadius: 3,
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                                 cursor: 'pointer',
                                 transition: '0.3s',
@@ -1908,14 +2169,14 @@ function PaymentDashboard({ onTabChange }) {
 }
 
 function AddPaymentForm({ onAdded }) {
-    const [form, setForm] = useState({ 
-        userId: '', 
-        courseId: '', 
+    const [form, setForm] = useState({
+        userId: '',
+        courseId: '',
         courseName: '',
         courseFees: '',
         paidAmount: '',
         remainingAmount: '',
-        amount: '', 
+        amount: '',
         method: 'cash',
         type: 'Installment 1'
     });
@@ -1960,10 +2221,10 @@ function AddPaymentForm({ onAdded }) {
             const d = res.data?.data;
             setForm(prev => ({
                 ...prev,
-                courseId:        d?.courseId       || '',
-                courseName:      d?.courseTitle     || 'N/A',
-                courseFees:      d?.fees            != null ? String(d.fees)            : '0',
-                paidAmount:      d?.paidAmount      != null ? String(d.paidAmount)      : '0',
+                courseId: d?.courseId || '',
+                courseName: d?.courseTitle || 'N/A',
+                courseFees: d?.fees != null ? String(d.fees) : '0',
+                paidAmount: d?.paidAmount != null ? String(d.paidAmount) : '0',
                 remainingAmount: d?.remainingAmount != null ? String(d.remainingAmount) : '0',
             }));
         } catch (err) {
@@ -1979,11 +2240,11 @@ function AddPaymentForm({ onAdded }) {
         if (!form.userId) return setMsg({ type: 'error', text: 'Please select a student' });
         setSubmitting(true);
         const payload = {
-            userId:   form.userId,
+            userId: form.userId,
             courseId: form.courseId || null,
-            amount:   form.amount,
-            method:   form.method,
-            type:     form.type
+            amount: form.amount,
+            method: form.method,
+            type: form.type
         };
 
         try {
@@ -2032,12 +2293,14 @@ function AddPaymentForm({ onAdded }) {
                             onChange={(e, v) => handleStudentChange(v)}
                             renderInput={(params) => (
                                 <TextField {...params} variant="outlined" size="small" placeholder="Select Student ▼"
-                                    InputProps={{ ...params.InputProps, endAdornment: (
-                                        <React.Fragment>
-                                            {loadingStudents ? <CircularProgress color="inherit" size={20} /> : null}
-                                            {params.InputProps.endAdornment}
-                                        </React.Fragment>
-                                    )}}
+                                    InputProps={{
+                                        ...params.InputProps, endAdornment: (
+                                            <React.Fragment>
+                                                {loadingStudents ? <CircularProgress color="inherit" size={20} /> : null}
+                                                {params.InputProps.endAdornment}
+                                            </React.Fragment>
+                                        )
+                                    }}
                                 />
                             )}
                         />
@@ -2136,7 +2399,7 @@ function PaymentList() {
 
     const getStatusChip = (status) => {
         const s = status?.toLowerCase();
-        if (s === 'paid')    return <Chip label="Paid" size="small" sx={{ bgcolor: '#e8f5e9', color: '#2e7d32', fontWeight: 700 }} />;
+        if (s === 'paid') return <Chip label="Paid" size="small" sx={{ bgcolor: '#e8f5e9', color: '#2e7d32', fontWeight: 700 }} />;
         if (s === 'partial') return <Chip label="Partial" size="small" sx={{ bgcolor: '#fffde7', color: '#fbc02d', fontWeight: 700 }} />;
         return <Chip label="Pending" size="small" sx={{ bgcolor: '#ffebee', color: '#c62828', fontWeight: 700 }} />;
     };
@@ -2162,7 +2425,7 @@ function PaymentList() {
                         value={filter.month} onChange={e => setFilter({ ...filter, month: e.target.value })}
                     >
                         {Array.from({ length: 12 }, (_, i) => (
-                            <MenuItem key={i+1} value={i+1}>{new Intl.DateTimeFormat('en-US', { month: 'short' }).format(new Date(2000, i))}</MenuItem>
+                            <MenuItem key={i + 1} value={i + 1}>{new Intl.DateTimeFormat('en-US', { month: 'short' }).format(new Date(2000, i))}</MenuItem>
                         ))}
                     </TextField>
                 </Box>
@@ -2199,9 +2462,9 @@ function PaymentList() {
                                 <TableCell sx={{ fontWeight: 700 }}>{row.status}</TableCell>
                                 <TableCell sx={{ textTransform: 'capitalize' }}>{row.method}</TableCell>
                                 <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-                                    {row.date && !row.date.includes('T') ? row.date : (row.date ? new Date(row.date).toLocaleString('en-IN', { 
-                                        day: '2-digit', month: 'short', year: 'numeric', 
-                                        hour: '2-digit', minute: '2-digit', hour12: true 
+                                    {row.date && !row.date.includes('T') ? row.date : (row.date ? new Date(row.date).toLocaleString('en-IN', {
+                                        day: '2-digit', month: 'short', year: 'numeric',
+                                        hour: '2-digit', minute: '2-digit', hour12: true
                                     }) : 'N/A')}
                                 </TableCell>
                             </TableRow>
@@ -2238,7 +2501,7 @@ function AllStudentsList() {
         }
     };
 
-    const filteredStudents = students.filter(s => 
+    const filteredStudents = students.filter(s =>
         s.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -2299,9 +2562,9 @@ function AllStudentsList() {
                                 <TableCell>{getStatusChip(row.status || (row.pendingAmount > 0 ? 'Partial' : 'Paid'))}</TableCell>
                                 <TableCell sx={{ textTransform: 'capitalize' }}>{row.method}</TableCell>
                                 <TableCell sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-                                    {row.date && !row.date.includes('T') ? row.date : (row.date ? new Date(row.date).toLocaleString('en-IN', { 
-                                        day: '2-digit', month: 'short', year: 'numeric', 
-                                        hour: '2-digit', minute: '2-digit', hour12: true 
+                                    {row.date && !row.date.includes('T') ? row.date : (row.date ? new Date(row.date).toLocaleString('en-IN', {
+                                        day: '2-digit', month: 'short', year: 'numeric',
+                                        hour: '2-digit', minute: '2-digit', hour12: true
                                     }) : 'N/A')}
                                 </TableCell>
                             </TableRow>
@@ -2314,13 +2577,13 @@ function AllStudentsList() {
 }
 
 function PaymentReports() {
-    const [filters, setFilters] = useState({ 
-        month: new Date().getMonth() + 1, 
-        year: new Date().getFullYear(), 
-        startDate: '', 
-        endDate: '', 
-        userId: '', 
-        status: 'all' 
+    const [filters, setFilters] = useState({
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
+        startDate: '',
+        endDate: '',
+        userId: '',
+        status: 'all'
     });
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -2338,7 +2601,7 @@ function PaymentReports() {
                 paymentAPI.getReport(filters),
                 paymentAPI.getList(filters)
             ]);
-            
+
             // Combine summary from report and records from list
             setReport({
                 ...reportRes.data.data,
@@ -2386,7 +2649,7 @@ function PaymentReports() {
                             value={filters.month} onChange={e => setFilters({ ...filters, month: e.target.value, startDate: '', endDate: '' })}
                         >
                             {Array.from({ length: 12 }, (_, i) => (
-                                <MenuItem key={i+1} value={i+1}>{new Intl.DateTimeFormat('en-US', { month: 'short' }).format(new Date(2000, i))}</MenuItem>
+                                <MenuItem key={i + 1} value={i + 1}>{new Intl.DateTimeFormat('en-US', { month: 'short' }).format(new Date(2000, i))}</MenuItem>
                             ))}
                         </TextField>
                     </Grid>
@@ -2433,8 +2696,8 @@ function PaymentReports() {
                         />
                     </Grid>
                     <Grid item xs={12} md={1.5} sx={{ display: 'flex', gap: 1 }}>
-                        <Button 
-                            variant="contained" fullWidth onClick={fetchReport} 
+                        <Button
+                            variant="contained" fullWidth onClick={fetchReport}
                             disabled={loading} sx={{ height: 40, borderRadius: 2 }}
                         >
                             {loading ? <CircularProgress size={20} /> : 'View'}
@@ -2510,9 +2773,9 @@ function PaymentReports() {
                                 <TableCell sx={{ fontWeight: 700 }}>{row.status}</TableCell>
                                 <TableCell sx={{ textTransform: 'capitalize' }}>{row.method}</TableCell>
                                 <TableCell>
-                                    {row.date && !row.date.includes('T') ? row.date : (row.date ? new Date(row.date).toLocaleString('en-IN', { 
-                                        day: '2-digit', month: 'short', year: 'numeric', 
-                                        hour: '2-digit', minute: '2-digit', hour12: true 
+                                    {row.date && !row.date.includes('T') ? row.date : (row.date ? new Date(row.date).toLocaleString('en-IN', {
+                                        day: '2-digit', month: 'short', year: 'numeric',
+                                        hour: '2-digit', minute: '2-digit', hour12: true
                                     }) : 'N/A')}
                                 </TableCell>
                             </TableRow>
@@ -2598,7 +2861,7 @@ function CertificateManagementPanel() {
             return;
         }
         if (!window.confirm('Are you sure you want to generate this certificate?')) return;
-        
+
         setSaving(true);
         try {
             await certificateAPI.generate({
@@ -2620,10 +2883,10 @@ function CertificateManagementPanel() {
     const handleDownload = async (row) => {
         console.log('handleDownload row:', JSON.stringify(row, null, 2));
         const certId = row._id;
-        
+
         try {
             setMsg({ type: 'info', text: 'Starting download...' });
-            
+
             const res = await certificateAPI.download(certId);
 
             const blob = new Blob([res.data], { type: 'application/pdf' });
@@ -2639,7 +2902,7 @@ function CertificateManagementPanel() {
         } catch (err) {
             console.error('Download error:', err);
             let errorMessage = 'Failed to download certificate';
-            
+
             // If error is a blob, try to read it as text to get the JSON error message
             if (err.response?.data instanceof Blob) {
                 const text = await err.response.data.text();
@@ -2650,7 +2913,7 @@ function CertificateManagementPanel() {
             } else {
                 errorMessage = err.response?.data?.message || errorMessage;
             }
-            
+
             setMsg({ type: 'error', text: errorMessage });
         }
     };
@@ -2658,10 +2921,10 @@ function CertificateManagementPanel() {
     const handleView = async (row) => {
         console.log('handleView row:', JSON.stringify(row, null, 2));
         const certId = row._id;
-        
+
         try {
             setMsg({ type: 'info', text: 'Opening preview...' });
-            
+
             const res = await certificateAPI.view(certId);
 
             const blob = new Blob([res.data], { type: 'application/pdf' });
@@ -2722,7 +2985,7 @@ function CertificateManagementPanel() {
                     </Button>
                 ))}
             </Box>
-            
+
             <Divider sx={{ mb: 3 }} />
 
             {msg.text && (
@@ -2739,8 +3002,8 @@ function CertificateManagementPanel() {
                         { label: 'Completed Certificates', value: stats.completedCertificates, icon: <VerifiedUser />, color: '#2e7d32', bg: 'linear-gradient(135deg, #2e7d32 0%, #81c784 100%)' },
                     ].map((card, i) => (
                         <Grid item xs={12} sm={4} key={i}>
-                            <Card sx={{ 
-                                borderRadius: 4, 
+                            <Card sx={{
+                                borderRadius: 4,
                                 background: card.bg,
                                 color: '#fff',
                                 boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
@@ -2813,19 +3076,19 @@ function CertificateManagementPanel() {
                                         <TableCell>{row.courseName}</TableCell>
                                         {subActive === 'completed' && <TableCell sx={{ fontWeight: 600 }}>{row.certificateNumber || '—'}</TableCell>}
                                         <TableCell>
-                                            <Chip 
-                                                label={subActive === 'completed' ? 'Issued' : row.status} 
-                                                size="small" 
-                                                color={subActive === 'completed' || row.status === 'Completed' ? 'success' : 'warning'} 
-                                                sx={{ fontWeight: 700 }} 
+                                            <Chip
+                                                label={subActive === 'completed' ? 'Issued' : row.status}
+                                                size="small"
+                                                color={subActive === 'completed' || row.status === 'Completed' ? 'success' : 'warning'}
+                                                sx={{ fontWeight: 700 }}
                                             />
                                         </TableCell>
                                         <TableCell>{formatDate(subActive === 'completed' ? row.issuedAt : (subActive === 'pending' ? row.createdAt : row.issuedDate))}</TableCell>
                                         <TableCell align="center">
                                             {subActive === 'pending' ? (
-                                                <Button 
-                                                    size="small" 
-                                                    variant="contained" 
+                                                <Button
+                                                    size="small"
+                                                    variant="contained"
                                                     color="primary"
                                                     onClick={() => handleOpenModal(row)}
                                                 >
@@ -2833,18 +3096,18 @@ function CertificateManagementPanel() {
                                                 </Button>
                                             ) : (
                                                 <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                                                    <Button 
-                                                        size="small" 
-                                                        variant="outlined" 
+                                                    <Button
+                                                        size="small"
+                                                        variant="outlined"
                                                         color="primary"
                                                         startIcon={<Visibility />}
                                                         onClick={() => handleView(row)}
                                                     >
                                                         View
                                                     </Button>
-                                                    <Button 
-                                                        size="small" 
-                                                        variant="outlined" 
+                                                    <Button
+                                                        size="small"
+                                                        variant="outlined"
                                                         startIcon={<FileDownload />}
                                                         onClick={() => handleDownload(row)}
                                                     >
@@ -2873,38 +3136,38 @@ function CertificateManagementPanel() {
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
                             <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Student Name:</Typography>
-                            <TextField 
-                                fullWidth size="small" 
-                                value={selectedRequest?.studentName || ''} 
-                                InputProps={{ readOnly: true }} 
+                            <TextField
+                                fullWidth size="small"
+                                value={selectedRequest?.studentName || ''}
+                                InputProps={{ readOnly: true }}
                                 sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}
                             />
                         </Grid>
                         <Grid item xs={12}>
                             <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Course Name:</Typography>
-                            <TextField 
-                                fullWidth size="small" 
-                                value={form.courseName} 
-                                onChange={(e) => setForm({...form, courseName: e.target.value})}
+                            <TextField
+                                fullWidth size="small"
+                                value={form.courseName}
+                                onChange={(e) => setForm({ ...form, courseName: e.target.value })}
                                 placeholder="E.g. Full Stack Web Development"
                             />
                         </Grid>
                         <Grid item xs={12}>
                             <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Duration:</Typography>
-                            <TextField 
-                                fullWidth size="small" 
-                                value={form.duration} 
-                                onChange={(e) => setForm({...form, duration: e.target.value})}
+                            <TextField
+                                fullWidth size="small"
+                                value={form.duration}
+                                onChange={(e) => setForm({ ...form, duration: e.target.value })}
                                 placeholder="E.g. 6 Months"
                             />
                         </Grid>
                         <Grid item xs={12}>
                             <Typography variant="subtitle2" fontWeight={700} mb={0.5}>Content / Description:</Typography>
-                            <TextField 
-                                fullWidth size="small" 
+                            <TextField
+                                fullWidth size="small"
                                 multiline rows={3}
-                                value={form.content} 
-                                onChange={(e) => setForm({...form, content: e.target.value})}
+                                value={form.content}
+                                onChange={(e) => setForm({ ...form, content: e.target.value })}
                                 placeholder="Enter the certificate content or achievement description..."
                             />
                         </Grid>
@@ -2914,9 +3177,9 @@ function CertificateManagementPanel() {
                     <Button onClick={() => setModalOpen(false)} disabled={saving} color="inherit">
                         Cancel
                     </Button>
-                    <Button 
-                        onClick={handleGenerate} 
-                        variant="contained" 
+                    <Button
+                        onClick={handleGenerate}
+                        variant="contained"
                         disabled={saving}
                         startIcon={saving && <CircularProgress size={16} color="inherit" />}
                     >

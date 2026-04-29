@@ -20,7 +20,7 @@ import EmailSettingsDialog from '../components/emails/EmailSettingsDialog';
 
 const EmailManagement = () => {
     const { user } = useAuth();
-    const [activeTab, setActiveTab] = useState(3); // Default to External Inbox
+    const [activeTab, setActiveTab] = useState(2); // Default to External Inbox (now index 2)
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -63,13 +63,13 @@ const EmailManagement = () => {
                     <Mail sx={{ fontSize: 40, color: 'primary.main' }} />
                     <Typography variant="h4">Email</Typography>
                 </Box>
-                {/* <Button
+                <Button
                     variant="outlined"
                     startIcon={<Settings />}
                     onClick={() => setSettingsOpen(true)}
                 >
                     Settings
-                </Button> */}
+                </Button>
             </Box>
 
             {/* Tabs */}
@@ -100,21 +100,13 @@ const EmailManagement = () => {
             )}
 
             {activeTab === 1 && (
-                <InboxView
-                    onEmailRead={handleEmailRead}
-                    message={message}
-                    setMessage={setMessage}
-                />
-            )}
-
-            {activeTab === 2 && (
                 <SentItems
                     message={message}
                     setMessage={setMessage}
                 />
             )}
 
-            {activeTab === 3 && (
+            {activeTab === 2 && (
                 <ExternalInboxView />
             )}
 

@@ -98,24 +98,25 @@ const sharedTypography = {
 };
 
 // Green/Teal theme for HR and Manager
-const greenTheme = createTheme({
+// Light Monochrome Theme for HR and Manager
+const lightMonoTheme = createTheme({
     palette: {
         primary: {
-            main: '#10b981', // Emerald green
-            light: '#34d399',
-            dark: '#059669',
+            main: '#000000', // Black
+            light: '#333333',
+            dark: '#000000',
             contrastText: '#ffffff',
         },
         secondary: {
-            main: '#14b8a6', // Teal
-            light: '#2dd4bf',
-            dark: '#0d9488',
+            main: '#4b5563', // Gray-600
+            light: '#9ca3af',
+            dark: '#1f2937',
             contrastText: '#ffffff',
         },
         success: {
-            main: '#10b981',
-            light: '#6ee7b7',
-            dark: '#047857',
+            main: '#22c55e', // Keep standard success/error but tinted
+            light: '#86efac',
+            dark: '#16a34a',
         },
         error: {
             main: '#ef4444',
@@ -136,6 +137,11 @@ const greenTheme = createTheme({
             default: '#f9fafb',
             paper: '#ffffff',
         },
+        text: {
+            primary: '#111827',
+            secondary: '#4b5563',
+        },
+        divider: 'rgba(0, 0, 0, 0.12)',
     },
     typography: {
         fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -158,15 +164,15 @@ const greenTheme = createTheme({
                     borderRadius: 8,
                 },
                 contained: {
-                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                     '&:hover': {
-                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
                     },
                 },
                 containedPrimary: {
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    background: 'linear-gradient(135deg, #000000 0%, #333333 100%)',
                     '&:hover': {
-                        background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                        background: 'linear-gradient(135deg, #333333 0%, #4b5563 100%)',
                     },
                 },
             },
@@ -203,8 +209,8 @@ const greenTheme = createTheme({
                 root: {
                     '& .MuiTableCell-head': {
                         fontWeight: 700,
-                        // backgroundColor: '#f0fdf4',
-                        color: '#065f46',
+                        // backgroundColor: '#f3f4f6',
+                        color: '#111827',
                     },
                 },
             },
@@ -231,8 +237,8 @@ const greenTheme = createTheme({
             root: {
                 '& .MuiTableCell-head': {
                     fontWeight: 700,
-                    backgroundColor: '#f0fdf4',
-                    color: '#065f46',
+                    backgroundColor: '#f3f4f6',
+                    color: '#111827',
                 },
             },
         },
@@ -240,131 +246,39 @@ const greenTheme = createTheme({
     ...sharedComponents,
 });
 
-// Wethers Field 415E theme for Employee role (muted sage green)
-const employeeTheme = createTheme({
-    palette: {
-        primary: {
-            main: '#0f172a ',        // Wethers Field 415E
-            light: '#0f172a ',
-            dark: '#0f172a ',
-            contrastText: '#ffffff',
-        },
-        secondary: {
-            main: '#0f172a ',
-            light: '#0f172a ',
-            dark: '#0f172a ',
-            contrastText: '#ffffff',
-        },
-        error: {
-            main: '#ef4444',
-            light: '#f87171',
-            dark: '#dc2626',
-        },
-        warning: {
-            main: '#f59e0b',
-            light: '#fbbf24',
-            dark: '#d97706',
-        },
-        background: {
-            default: '#f5f6f5',
-            paper: '#ffffff',
-        },
-    },
-    typography: sharedTypography,
-    shape: { borderRadius: 8 },
-    components: {
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    borderRadius: 8,
-                },
-                contained: {
-                    boxShadow: '0 2px 8px rgba(107, 124, 110, 0.25)',
-                    '&:hover': {
-                        boxShadow: '0 4px 12px rgba(107, 124, 110, 0.35)',
-                    },
-                },
-                containedPrimary: {
-                    background: 'linear-gradient(135deg, #6B7C6E 0%, #4A5A4C 100%)',
-                    '&:hover': {
-                        background: 'linear-gradient(135deg, #4A5A4C 0%, #3A4A3C 100%)',
-                    },
-                },
-            },
-        },
-        MuiTableHead: {
-            styleOverrides: {
-                root: {
-                    '& .MuiTableCell-head': {
-                        fontWeight: 700,
-                        backgroundColor: '#eef0ee',
-                        color: '#3A4A3C',
-                    },
-                },
-            },
-        },
-        MuiCard: {
-            styleOverrides: {
-                root: {
-                    borderRadius: 12,
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                    '&:hover': { boxShadow: '0 4px 16px rgba(107, 124, 110, 0.2)' },
-                },
-            },
-        },
-        MuiPaper: {
-            styleOverrides: {
-                root: { borderRadius: 8 },
-                elevation1: { boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' },
-                elevation2: { boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' },
-                elevation3: { boxShadow: '0 6px 16px rgba(107, 124, 110, 0.12)' },
-            },
-        },
-        MuiChip: { styleOverrides: { root: { fontWeight: 600 } } },
-        MuiTab: {
-            styleOverrides: {
-                root: {
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                },
-            },
-        },
-    },
-});
+const greenTheme = lightMonoTheme;
+const employeeTheme = lightMonoTheme;
 
 
-// Dark navy theme for Student role (#0f172a)
+// Dark Monochrome Theme for Student role
 const studentTheme = createTheme({
     palette: {
         mode: 'dark',
         primary: {
-            main: '#6366f1',        // Indigo accent – visible on dark bg
-            light: '#818cf8',
-            dark: '#4f46e5',
-            contrastText: '#ffffff',
+            main: '#ffffff',        // White accent on dark background
+            light: '#f9fafb',
+            dark: '#cccccc',
+            contrastText: '#000000',
         },
         secondary: {
-            main: '#38bdf8',        // Sky blue accent
-            light: '#7dd3fc',
-            dark: '#0284c7',
-            contrastText: '#ffffff',
+            main: '#9ca3af',        // Soft gray
+            light: '#d1d5db',
+            dark: '#6b7280',
+            contrastText: '#000000',
         },
         success: { main: '#22c55e', light: '#86efac', dark: '#15803d' },
-        error:   { main: '#ef4444', light: '#f87171', dark: '#dc2626' },
+        error: { main: '#ef4444', light: '#f87171', dark: '#dc2626' },
         warning: { main: '#f59e0b', light: '#fbbf24', dark: '#d97706' },
         background: {
-            default: '#0f172a',     // Slate-950 – main background
-            paper:   '#1e293b',     // Slate-800 – cards / dialogs
+            default: '#000000',     // Deep black
+            paper: '#111111',       // Slightly off-black
         },
         text: {
-            primary:   '#f1f5f9',
-            secondary: '#94a3b8',
-            disabled:  '#475569',
+            primary: '#ffffff',
+            secondary: '#a1a1aa',
+            disabled: '#52525b',
         },
-        divider: 'rgba(255,255,255,0.08)',
+        divider: 'rgba(255,255,255,0.1)',
     },
     typography: sharedTypography,
     shape: { borderRadius: 8 },
@@ -373,29 +287,30 @@ const studentTheme = createTheme({
             styleOverrides: {
                 root: { textTransform: 'none', fontWeight: 600, borderRadius: 8 },
                 contained: {
-                    boxShadow: '0 2px 8px rgba(99,102,241,0.3)',
-                    '&:hover': { boxShadow: '0 4px 14px rgba(99,102,241,0.45)' },
+                    boxShadow: '0 2px 8px rgba(255,255,255,0.1)',
+                    '&:hover': { boxShadow: '0 4px 14px rgba(255,255,255,0.2)' },
                 },
                 containedPrimary: {
-                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                    '&:hover': { background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)' },
+                    background: 'linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%)',
+                    color: '#000000',
+                    '&:hover': { background: 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)' },
                 },
             },
         },
         MuiCard: {
             styleOverrides: {
                 root: {
-                    backgroundColor: '#1e293b',
+                    backgroundColor: '#111111',
                     borderRadius: 12,
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    '&:hover': { boxShadow: '0 4px 20px rgba(99,102,241,0.2)' },
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.6)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    '&:hover': { boxShadow: '0 4px 20px rgba(255,255,255,0.05)' },
                 },
             },
         },
         MuiPaper: {
             styleOverrides: {
-                root: { backgroundColor: '#1e293b', borderRadius: 8 },
+                root: { backgroundColor: '#1e293b' },
                 elevation1: { boxShadow: '0 2px 10px rgba(0,0,0,0.35)' },
                 elevation2: { boxShadow: '0 4px 14px rgba(0,0,0,0.4)' },
             },
@@ -405,8 +320,8 @@ const studentTheme = createTheme({
                 root: {
                     '& .MuiTableCell-head': {
                         fontWeight: 700,
-                        backgroundColor: '#0f172a',
-                        color: '#6366f1',
+                        backgroundColor: '#000000',
+                        color: '#ffffff',
                     },
                 },
             },
@@ -436,7 +351,7 @@ function ThemedApp({ children }) {
     const theme = useMemo(
         () => {
             if (user?.role === 'Employee') return employeeTheme;
-            if (user?.role === 'Student')  return studentTheme;
+            if (user?.role === 'Student') return studentTheme;
             return greenTheme; // HR / Manager / default
         },
         [user?.role]
@@ -487,9 +402,9 @@ function AppRoutes() {
             <Route
                 path="/login"
                 element={
-                    isAuthenticated 
-                        ? (user?.approvalStatus === 'Pending' && user?.role !== 'HR' 
-                            ? <Navigate to="/pending-approval" replace /> 
+                    isAuthenticated
+                        ? (user?.approvalStatus === 'Pending' && user?.role !== 'HR'
+                            ? <Navigate to="/pending-approval" replace />
                             : <Navigate to="/dashboard" replace />)
                         : <Login />
                 }
@@ -497,9 +412,9 @@ function AppRoutes() {
             <Route
                 path="/register"
                 element={
-                    isAuthenticated 
-                        ? (user?.approvalStatus === 'Pending' && user?.role !== 'HR' 
-                            ? <Navigate to="/pending-approval" replace /> 
+                    isAuthenticated
+                        ? (user?.approvalStatus === 'Pending' && user?.role !== 'HR'
+                            ? <Navigate to="/pending-approval" replace />
                             : <Navigate to="/dashboard" replace />)
                         : <Register />
                 }
@@ -666,7 +581,7 @@ function AppRoutes() {
                     </ProtectedRoute>
                 }
             />
-            
+
             {/* Student Portal Routes */}
             <Route
                 path="/student-courses"
