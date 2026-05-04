@@ -74,7 +74,7 @@ const Sidebar = ({ mobileOpen, onClose }) => {
         { text: 'Payroll', icon: <AttachMoney />, path: '/payroll', roles: ['HR', 'Employee'] },
         { text: 'Performance', icon: <Assessment />, path: '/performance', roles: ['HR', 'Manager', 'Employee'] },
         { text: 'Documents', icon: <FolderShared />, path: '/documents', roles: ['HR', 'Manager', 'Employee'] },
-        { text: 'Recruitment', icon: <WorkOutline />, path: '/recruitment', roles: ['HR'] },
+        // { text: 'Recruitment', icon: <WorkOutline />, path: '/recruitment', roles: ['HR'] },
         { text: 'Reports', icon: <BarChart />, path: '/reports', roles: ['HR', 'Manager'] }
     ];
 
