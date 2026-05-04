@@ -7,6 +7,7 @@ export default defineConfig(({ mode }) => {
     const backendURL = env.VITE_BACKEND_URL || 'https://by8labs-backend.onrender.com';
 
     return {
+        base: '/',
         plugins: [react()],
         server: {
             port: 3000,
