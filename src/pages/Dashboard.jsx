@@ -37,7 +37,6 @@ import {
     VerifiedUser
 } from '@mui/icons-material';
 import AttendanceCalendar from '../components/dashboard/AttendanceCalendar';
-import { attendanceAPI } from '../services/api';
 import StudentDashboard from './studentPortal/StudentDashboard';
 
 const Dashboard = () => {
@@ -234,6 +233,7 @@ const Dashboard = () => {
         try {
             const response = await api.get('/access-requests');
             setAccessRequests(response.data || []);
+        } catch (error) {
             console.error('Error fetching access requests:', error);
         }
     };
