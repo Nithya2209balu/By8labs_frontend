@@ -6,7 +6,7 @@ import {
     List as MuiList, ListItem, ListItemButton, ListItemIcon, ListItemText,
     Tooltip, Card, CardContent, InputAdornment, MenuItem,
     Dialog, DialogTitle, DialogContent, DialogActions, LinearProgress,
-    Autocomplete
+    Autocomplete, FormControl, FormLabel, RadioGroup, Radio, FormControlLabel
 } from '@mui/material';
 import {
     Dashboard, PeopleOutlined, MenuBook, EventAvailable, EmojiEvents,
@@ -33,9 +33,9 @@ const MODULES = [
     { id: 'courses', label: 'Courses', icon: <MenuBook /> },
     { id: 'documents', label: 'Upload Course', icon: <CloudUpload /> },
     { id: 'attendance', label: 'Attendance', icon: <EventAvailable /> },
-    { id: 'leaderboard', label: 'Leaderboard', icon: <EmojiEvents /> },
-    { id: 'notifications', label: 'Notifications', icon: <NotificationsActive /> },
-    { id: 'enrollments', label: 'Enrollments', icon: <Assessment /> },
+    // { id: 'leaderboard', label: 'Leaderboard', icon: <EmojiEvents /> },
+    // { id: 'notifications', label: 'Notifications', icon: <NotificationsActive /> },
+    // { id: 'enrollments', label: 'Enrollments', icon: <Assessment /> },
     { id: 'leave', label: 'Leave Management', icon: <EventNote /> },
     { id: 'tasks', label: 'Tasks', icon: <Assignment /> },
     { id: 'payment', label: 'Payments', icon: <Payments /> },
@@ -502,7 +502,7 @@ function AttendanceControlPanel({ onRefresh }) {
             {error && <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>{error}</Alert>}
 
             {/* Attendance Overview Cards (5 Columns) */}
-            <Grid container spacing={2} mb={4}>
+            {/* <Grid container spacing={2} mb={4}>
                 <Grid item xs={12} sm={4} md>
                     <Card sx={{ height: '100%', borderTop: '4px solid #9e9e9e' }}>
                         <CardContent sx={{ textAlign: 'center', p: 2 }}>
@@ -549,11 +549,11 @@ function AttendanceControlPanel({ onRefresh }) {
                         </CardContent>
                     </Card>
                 </Grid>
-            </Grid>
+            </Grid> */}
 
             {/* ── Tab Bar ── */}
             <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
-                {['📋 Mark', '✏️ Edit (OTP)', '📅 List', '📊 Summary', '👥 Admin'].map((label, i) => (
+                {['📋 Mark', '✏️ Edit (OTP)', '📅 List', '📊 Summary'].map((label, i) => (
                     <Button key={i} size="small"
                         variant={attTab === i ? 'contained' : 'outlined'}
                         onClick={() => { setAttTab(i); setError(''); setSuccess(''); }}
@@ -609,12 +609,22 @@ function AttendanceControlPanel({ onRefresh }) {
                                 value={markRemarks} onChange={e => setMarkRemarks(e.target.value)} />
                         </Grid>
                         <Grid item xs={12}>
-                            <Button variant="contained" fullWidth size="large"
-                                startIcon={marking ? <CircularProgress size={16} color="inherit" /> : <CheckCircle />}
-                                onClick={handleMark} disabled={marking || !markUserId}
-                                sx={{ fontWeight: 700 }}>
-                                {marking ? 'Saving...' : '✅ Submit Attendance'}
-                            </Button>
+                          <Button 
+    variant="contained" 
+    fullWidth 
+    size="large"
+    disabled={marking || !markUserId}
+    sx={{ 
+        fontWeight: 700, 
+        color: "#fff",
+        // This overrides the default MUI disabled color
+        "&.Mui-disabled": {
+            color: "rgba(255, 255, 255, 0.7)", // Or any color you prefer
+        }
+    }}
+>
+    {marking ? 'Saving...' : '✅ Submit Attendance'}
+</Button>
                         </Grid>
                     </Grid>
                 </Box>
@@ -1700,7 +1710,7 @@ const ADMISSION_API = 'https://student-portal-znxr.onrender.com/api/admissions';
 const COURSES_API = 'https://student-portal-znxr.onrender.com/api/courses/categories/list';
 
 function AdmissionFormPanel() {
-    const [form, setForm] = useState({ name: '', course: '', phone: '', email: '', password: '' });
+    const [form, setForm] = useState({ name: '', classType: 'Online', course: '', phone: '', email: '', password: '' });
     const [errors, setErrors] = useState({});
     const [showPass, setShowPass] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -1728,13 +1738,17 @@ function AdmissionFormPanel() {
     const validate = () => {
         const e = {};
         if (!form.name.trim()) e.name = 'Full name is required';
-        if (!form.course) e.course = 'Please select a course';
+        if (form.classType === 'Offline' && !form.course) e.course = 'Please select a course';
         if (!form.phone.trim()) e.phone = 'Phone number is required';
-        else if (!/^\d{10}$/.test(form.phone.trim())) e.phone = 'Enter a valid 10-digit number';
+        else if (!/^\d+$/.test(form.phone.trim())) e.phone = 'Phone must be numeric';
+        else if (form.phone.trim().length < 10) e.phone = 'Phone must be at least 10 digits';
+        
         if (!form.email.trim()) e.email = 'Email is required';
         else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Enter a valid email address';
+        
         if (!form.password) e.password = 'Password is required';
         else if (form.password.length < 6) e.password = 'Password must be at least 6 characters';
+        
         setErrors(e);
         return Object.keys(e).length === 0;
     };
@@ -1750,18 +1764,27 @@ function AdmissionFormPanel() {
         if (!validate()) return;
         setLoading(true);
         try {
+            const payload = {
+                name: form.name.trim(),
+                phone: form.phone.trim(),
+                email: form.email.trim(),
+                password: form.password,
+                studentType: form.classType.toLowerCase(),
+            };
+
+            if (form.classType === 'Offline') {
+                payload.course = form.course;
+            }
+
             const res = await fetch(ADMISSION_API, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: form.name.trim(), course: form.course,
-                    phone: form.phone.trim(), email: form.email.trim(), password: form.password,
-                }),
+                body: JSON.stringify(payload),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || `Server error (${res.status})`);
             setSuccessData(data.data);
-            setForm({ name: '', course: '', phone: '', email: '', password: '' });
+            setForm({ name: '', classType: 'Online', course: '', phone: '', email: '', password: '' });
             setSnack({ open: true, msg: data.message || 'Admission submitted successfully!', severity: 'success' });
         } catch (err) {
             setSnack({ open: true, msg: err.message || 'Submission failed. Please try again.', severity: 'error' });
@@ -1829,29 +1852,44 @@ function AdmissionFormPanel() {
                             />
 
                             <Typography variant="overline" color="text.secondary" fontWeight={700} letterSpacing={1.2} sx={{ display: 'block', mt: 2 }}>
-                                Course Selection
+                                Class Type & Course Selection
                             </Typography>
                             <Divider sx={{ mb: 2, mt: 0.5 }} />
 
-                            <TextField
-                                fullWidth select name="course" label="Select Course *"
-                                value={form.course} onChange={handleChange}
-                                error={!!errors.course} helperText={errors.course}
-                                size="small"
-                                disabled={coursesLoading}
-                            >
-                                <MenuItem value="" disabled>
-                                    <em>{coursesLoading ? 'Loading courses…' : courses.length === 0 ? 'No courses available' : 'Choose a course…'}</em>
-                                </MenuItem>
-                                {courses.map(c => (
-                                    <MenuItem key={c._id} value={c.name}>
-                                        <Box display="flex" alignItems="center" gap={1}>
-                                            <MenuBook sx={{ fontSize: 16, color: 'primary.main' }} />
-                                            {c.name}
-                                        </Box>
+                            <FormControl component="fieldset" sx={{ mb: 2 }}>
+                                <FormLabel component="legend" sx={{ fontSize: '0.8rem', fontWeight: 700 }}>CLASS TYPE</FormLabel>
+                                <RadioGroup
+                                    row
+                                    name="classType"
+                                    value={form.classType}
+                                    onChange={handleChange}
+                                >
+                                    <FormControlLabel value="Online" control={<Radio size="small" />} label="Online" />
+                                    <FormControlLabel value="Offline" control={<Radio size="small" />} label="Offline" />
+                                </RadioGroup>
+                            </FormControl>
+
+                            {form.classType === 'Offline' && (
+                                <TextField
+                                    fullWidth select name="course" label="Select Course *"
+                                    value={form.course} onChange={handleChange}
+                                    error={!!errors.course} helperText={errors.course}
+                                    size="small"
+                                    disabled={coursesLoading}
+                                >
+                                    <MenuItem value="" disabled>
+                                        <em>{coursesLoading ? 'Loading courses…' : courses.length === 0 ? 'No courses available' : 'Choose a course…'}</em>
                                     </MenuItem>
-                                ))}
-                            </TextField>
+                                    {courses.map(c => (
+                                        <MenuItem key={c._id} value={c.name}>
+                                            <Box display="flex" alignItems="center" gap={1}>
+                                                <MenuBook sx={{ fontSize: 16, color: 'primary.main' }} />
+                                                {c.name}
+                                            </Box>
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            )}
 
                             <Button
                                 fullWidth type="submit" variant="contained" size="large"
@@ -1910,9 +1948,10 @@ function AdmissionFormPanel() {
                             {[
                                 { icon: '👤', text: 'Enter the student\'s full legal name' },
                                 { icon: '📧', text: 'Use a valid email — it will be their login' },
-                                { icon: '📱', text: 'Phone must be exactly 10 digits' },
+                                { icon: '📱', text: 'Phone must be numeric' },
                                 { icon: '🔑', text: 'Set a strong password (min 6 chars)' },
-                                { icon: '📚', text: 'Choose the course they are enrolling in' },
+                                { icon: '🌐', text: 'Select Class Type (Online or Offline)' },
+                                { icon: '📚', text: 'Course is required only for Offline' },
                                 { icon: '✅', text: 'Student account is created immediately' },
                             ].map((item, i) => (
                                 <Box key={i} display="flex" gap={1.5} mb={1.5} alignItems="flex-start">
@@ -1921,9 +1960,7 @@ function AdmissionFormPanel() {
                                 </Box>
                             ))}
                             <Divider sx={{ my: 2 }} />
-                            <Typography variant="caption" color="text.secondary">
-                                API: <code>POST student-portal-znxr.onrender.com/api/admissions</code>
-                            </Typography>
+                           
                         </Paper>
                     )}
                 </Grid>
@@ -3004,8 +3041,8 @@ function CertificateManagementPanel() {
                         <Grid item xs={12} sm={4} key={i}>
                             <Card sx={{
                                 borderRadius: 4,
-                                background: card.bg,
-                                color: '#fff',
+                                
+                            
                                 boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
                                 transition: 'transform 0.3s ease',
                                 '&:hover': { transform: 'translateY(-5px)' }

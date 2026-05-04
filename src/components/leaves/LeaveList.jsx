@@ -122,7 +122,7 @@ const LeaveList = ({ leaves, onEdit, onDelete, onRefresh, isHR = false, onReview
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {(() => {
+                        {(() => { 
                             const filtered = leaves.filter(leave => {
                                 const empName = `${leave.employeeId?.firstName || ''} ${leave.employeeId?.lastName || ''}`.toLowerCase();
                                 const searchMatch = !searchTerm ||

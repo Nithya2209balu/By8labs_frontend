@@ -210,7 +210,6 @@ const lightMonoTheme = createTheme({
                     '& .MuiTableCell-head': {
                         fontWeight: 700,
                         // backgroundColor: '#f3f4f6',
-                        color: '#111827',
                     },
                 },
             },
@@ -238,7 +237,6 @@ const lightMonoTheme = createTheme({
                 '& .MuiTableCell-head': {
                     fontWeight: 700,
                     backgroundColor: '#f3f4f6',
-                    color: '#111827',
                 },
             },
         },
