@@ -1491,13 +1491,21 @@ function PortalConnect({ onConnect }) {
                         value={password} onChange={e => setPassword(e.target.value)}
                         sx={{ mb: 3 }} autoComplete="current-password"
                     />
-                    <Button
-                        type="submit" variant="contained" fullWidth
-                        disabled={loading}
-                        startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
-                    >
-                        {loading ? 'Connecting…' : 'Connect'}
-                    </Button>
+                  <Button
+  type="submit"
+  variant="contained"
+  fullWidth
+  disabled={loading}
+  startIcon={loading ? <CircularProgress size={18} color="inherit" /> : null}
+  sx={{
+    color: '#fff',                // text color
+    '&.Mui-disabled': {
+      color: '#fff',              // keep white even when disabled
+    }
+  }}
+>
+  {loading ? 'Connecting…' : 'Connect'}
+</Button>
                 </Box>
             </Paper>
         </Box>
