@@ -1714,8 +1714,8 @@ function DocumentsPanel() {
 // ═══════════════════════════════════════════════════════════════════════════
 // Panel: Student Admission Form
 // ═══════════════════════════════════════════════════════════════════════════
-const ADMISSION_API = 'https://student-portal-znxr.onrender.com/api/admissions';
-const COURSES_API = 'https://student-portal-znxr.onrender.com/api/courses/categories/list';
+const ADMISSION_API = 'https://hr-student-backend.onrender.com/api/admissions';
+const COURSES_API = 'https://hr-student-backend.onrender.com/api/courses/categories/list';
 
 function AdmissionFormPanel() {
     const [form, setForm] = useState({ name: '', classType: 'Online', course: '', phone: '', email: '', password: '' });

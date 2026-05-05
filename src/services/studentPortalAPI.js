@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const STUDENT_API_URL = 'https://student-portal-znxr.onrender.com/api';
+export const STUDENT_API_URL = 'https://hr-student-backend.onrender.com/api';
 
 // Separate token key so it doesn't collide with the HR backend token
 const TOKEN_KEY = 'student_portal_token';
